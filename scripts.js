@@ -222,8 +222,27 @@ document.body.appendChild(geocoderContainer);
 geocoderContainer.appendChild(geocoder.onAdd(map));
 
 // Re-check zoom level after geocoder fly
-geocoder.on('result', () => {
-  toggleBanner(); // manually call it again
+let searchMarker = null; // declare once globally
+
+geocoder.on('result', (e) => {
+  // Remove existing marker if present
+  if (searchMarker) {
+    searchMarker.remove();
+  }
+
+  // Create a new marker element
+  const el = document.createElement('div');
+  el.style.width = '16px';
+  el.style.height = '16px';
+  el.style.borderRadius = '50%';
+  el.style.backgroundColor = '#fff';
+  el.style.border = '4px solid #00ed3d'; // match your FEMA flood color
+  el.style.boxShadow = '0 0 6px rgba(0, 0, 0, 0.4)';
+  
+  // Place marker at geocoded location
+  searchMarker = new mapboxgl.Marker(el)
+    .setLngLat(e.result.center)
+    .addTo(map);
 });
 
 
