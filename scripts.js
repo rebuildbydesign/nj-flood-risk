@@ -177,20 +177,37 @@ map.on('load', () => {
     // Hospitals
     map.addSource('hospitals', {
         type: 'geojson',
-        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.json'
+        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.geojson'
     });
     map.addLayer({
-        id: 'hospitals-layer',
-        type: 'circle',
-        source: 'hospitals',
-        paint: {
-            'circle-radius': 5,
-            'circle-color': '#fff',
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#000'
-        },
-        layout: { 'visibility': 'none' }
-    });
+    id: 'hospitals-layer',
+    type: 'circle',
+    source: 'hospitals',
+    paint: {
+        // Dynamic circle radius: smaller statewide, bigger zoomed in
+        'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            7, 6,    // at zoom 7: radius 6px
+            10, 12,  // at zoom 10: radius 12px
+            14, 20   // at zoom 14: radius 20px
+        ],
+        // Hospital fill color: blue for healthcare, high contrast
+        'circle-color': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false], '#34ace0', // Highlight if needed
+            '#1c6ed5' // Default: healthcare blue
+        ],
+        // White ring for clarity
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#fff',
+        // Drop subtle shadow effect for visual pop (if desired, not always supported)
+        //'circle-blur': 0.1
+    },
+    layout: { 'visibility': 'none' }
+});
+
 
     // Elementary Schools
     map.addSource('elementary-schools', {
@@ -273,6 +290,27 @@ map.on('load', () => {
         map.off('mousemove', removeNudgeOnInteraction);
     }
     map.on('mousemove', removeNudgeOnInteraction);
+
+
+
+    const hospitalToggle = document.getElementById('toggle-hospitals');
+if (hospitalToggle) {
+    // Force unchecked on load
+    hospitalToggle.checked = false;
+
+    hospitalToggle.addEventListener('change', function (e) {
+        if (map.getLayer('hospitals-layer')) {
+            map.setLayoutProperty(
+                'hospitals-layer',
+                'visibility',
+                e.target.checked ? 'visible' : 'none'
+            );
+        }
+    });
+}
+
+
+
 
 }); // --- END map.on('load') ---
 
