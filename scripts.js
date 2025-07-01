@@ -179,34 +179,37 @@ map.on('load', () => {
         type: 'geojson',
         data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.geojson'
     });
-    map.addLayer({
-    id: 'hospitals-layer',
-    type: 'circle',
-    source: 'hospitals',
-    paint: {
-        // Dynamic circle radius: smaller statewide, bigger zoomed in
-        'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            7, 6,    // at zoom 7: radius 6px
-            10, 12,  // at zoom 10: radius 12px
-            14, 20   // at zoom 14: radius 20px
-        ],
-        // Hospital fill color: blue for healthcare, high contrast
-        'circle-color': [
-            'case',
-            ['boolean', ['feature-state', 'hover'], false], '#34ace0', // Highlight if needed
-            '#1c6ed5' // Default: healthcare blue
-        ],
-        // White ring for clarity
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#fff',
-        // Drop subtle shadow effect for visual pop (if desired, not always supported)
-        //'circle-blur': 0.1
-    },
-    layout: { 'visibility': 'none' }
-});
+    map.loadImage(
+    'https://rebuildbydesign.github.io/nj-flood-risk/img/hospital.png',
+    (error, image) => {
+        if (error) throw error;
+        // Prevent duplicate add
+        if (!map.hasImage('hospital-icon')) {
+            map.addImage('hospital-icon', image, { sdf: false });
+        }
+
+        // Now add the hospital symbol layer
+        map.addLayer({
+            id: 'hospitals-symbol',
+            type: 'symbol',
+            source: 'hospitals',
+            layout: {
+                'icon-image': 'hospital-icon',
+                'icon-allow-overlap': true,
+                'icon-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    7, 0.08,   // Small statewide
+                    10, 0.12,  // Medium
+                    14, 0.20   // Large at high zoom
+                ],
+                'visibility': 'none'
+            }
+        });
+    }
+);
+
 
 
     // Elementary Schools
@@ -295,18 +298,17 @@ map.on('load', () => {
 
     const hospitalToggle = document.getElementById('toggle-hospitals');
 if (hospitalToggle) {
-    // Force unchecked on load
-    hospitalToggle.checked = false;
-
+    hospitalToggle.checked = false; // hidden on load
     hospitalToggle.addEventListener('change', function (e) {
-        if (map.getLayer('hospitals-layer')) {
+        if (map.getLayer('hospitals-symbol')) {
             map.setLayoutProperty(
-                'hospitals-layer',
+                'hospitals-symbol',
                 'visibility',
                 e.target.checked ? 'visible' : 'none'
             );
         }
     });
+
 }
 
 
