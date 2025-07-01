@@ -25,8 +25,7 @@ html, body {
   background: rgba(255, 255, 255, 0.75);
   color: #111;
   padding: 24px;
-  border-radius: 14px;
-  backdrop-filter: blur(8px); /* glassy effect */
+  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
   width: 40vw;
@@ -59,12 +58,10 @@ html, body {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.785);
 }
 
-
-
 /* Risk buttons */
 .info-box .risk-buttons {
   display: flex;
-  flex-wrap: wrap;   /* allow buttons to wrap on narrow screens */
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -75,7 +72,6 @@ html, body {
   font-weight: 600;
   color: #111;
   border: none;
-  border-radius: 8px;
   cursor: pointer;
   transition: outline 0.2s;
   outline: 2px solid transparent;
@@ -87,27 +83,23 @@ html, body {
   outline: 2px solid #fff;
 }
 
-
 /* LEGEND */
-
 #legend {
   position: absolute;
   bottom: 32px;
   right: 32px;
   z-index: 2;
-  background: rgba(0, 0, 0, 0.82); /* subtle transparency */
+  background: rgba(0, 0, 0, 0.82);
   color: #fff;
   padding: 16px 20px;
-  border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.369); /* subtle border for separation */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);   /* stronger shadow for depth */
+  border: 1px solid rgba(255, 255, 255, 0.369);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   max-width: 280px;
   line-height: 1.6;
 }
 
-/* Legend title */
 #legend strong {
   display: block;
   font-size: 0.95rem;
@@ -116,24 +108,19 @@ html, body {
   color: #fff;
 }
 
-/* Individual legend item */
 #legend div {
   display: flex;
   align-items: center;
   margin-top: 6px;
 }
 
-/* Color square */
 .legend-key {
   display: inline-block;
   width: 14px;
   height: 14px;
   margin-right: 10px;
-  border-radius: 3px;
   flex-shrink: 0;
 }
-
-
 
 /* styles.css */
 .zoom-banner {
@@ -143,18 +130,18 @@ html, body {
   background: rgba(0,0,0,0.85);
   color: #fff;
   padding: 8px 14px;
-  border-radius: 6px;
   font-size: 0.9rem;
   z-index: 2;
   transition: opacity 0.3s;
 }
 .zoom-banner.hidden { opacity: 0; pointer-events: none; }
 
-
+/* Geocoder styling */
 .mapboxgl-ctrl-geocoder {
   z-index: 10 !important;
   position: absolute !important;
   top: 20px;
   right: 20px;
   max-width: 400px;
+  border: 1px solid #fff; /* Added white border */
 }

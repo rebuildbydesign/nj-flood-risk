@@ -9,15 +9,24 @@
 .mapboxgl-ctrl-geocoder {
     position: absolute;
     left: auto; /* Reset left to auto */
-    background-color: #f7c320; /* Black background */
+    background-color: #dd4000; /* Background */
     width: 225px;
-    color: #000; /* White text */
+    color: #000; /* Text color */
     min-width: 225px;
     z-index: 999;
-    border-radius: 0px;
     transition: width .25s, min-width .25s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); /* Shadow for better visibility */
+    border: 1px solid rgba(255, 255, 255, 0.369); /* Match legend border */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); /* Match legend shadow */
+    border-radius: 0 !important; /* Force remove container rounding */
 }
+
+/* Remove rounding from internal input and button elements */
+.mapboxgl-ctrl-geocoder input,
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--button,
+.mapboxgl-ctrl-geocoder .suggestions {
+    border-radius: 0 !important;
+}
+
 
 .mapboxgl-ctrl-geocoder--input {
     font: inherit;
