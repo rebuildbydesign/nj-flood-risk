@@ -177,10 +177,10 @@ map.on('load', () => {
     // Hospitals
     map.addSource('hospitals', {
         type: 'geojson',
-        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.geojson'
+        data: '/data/hospitals.geojson'
     });
     map.loadImage(
-  'https://rebuildbydesign.github.io/nj-flood-risk/img/hospital.png',
+  '/img/hospitals.png',
   (error, image) => {
     if (error) throw error;
     if (!map.hasImage('hospital-icon')) {
@@ -198,11 +198,50 @@ map.on('load', () => {
           'interpolate',
           ['linear'],
           ['zoom'],
-          7, 0.22,   // ~14px at state view
-          9, 0.32,   // ~20px
-          11, 0.52,  // ~33px
-          13, 0.75,  // ~48px
-          15, 1.0    // 64px at high zoom
+            7, 0.18,   // 18px at statewide (100*0.18)
+          9, 0.26,   // 26px
+          11, 0.42,  // 42px
+          13, 0.65,  // 65px
+          15, 1.0    // 100px (full size) at close zoom
+        ],
+        'visibility': 'none'
+      }
+    });
+
+    }
+);
+
+
+    // School Point Locations of NJ (Public, Private and Charter)
+
+    map.addSource('schools', {
+        type: 'geojson',
+        data: '/data/schools.geojson'
+    });
+    map.loadImage(
+  '/img/schools.png',
+  (error, image) => {
+    if (error) throw error;
+    if (!map.hasImage('schools-icon')) {
+      map.addImage('schools-icon', image, { sdf: false });
+    }
+
+    map.addLayer({
+      id: 'schools-symbol',
+      type: 'symbol',
+      source: 'schools',
+      layout: {
+        'icon-image': 'schools-icon',
+        'icon-allow-overlap': true,
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+            7, 0.18,   // 18px at statewide (100*0.18)
+          9, 0.26,   // 26px
+          11, 0.42,  // 42px
+          13, 0.65,  // 65px
+          15, 1.0    // 100px (full size) at close zoom
         ],
         'visibility': 'none'
       }
@@ -213,41 +252,6 @@ map.on('load', () => {
 
 
 
-    // Elementary Schools
-    map.addSource('elementary-schools', {
-        type: 'geojson',
-        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/elementary-schools.json'
-    });
-    map.addLayer({
-        id: 'elementary-schools-layer',
-        type: 'circle',
-        source: 'elementary-schools',
-        paint: {
-            'circle-radius': 4,
-            'circle-color': '#f2a007',
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#000'
-        },
-        layout: { 'visibility': 'none' }
-    });
-
-    // Secondary Schools
-    map.addSource('secondary-schools', {
-        type: 'geojson',
-        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/secondary-schools.json'
-    });
-    map.addLayer({
-        id: 'secondary-schools-layer',
-        type: 'circle',
-        source: 'secondary-schools',
-        paint: {
-            'circle-radius': 4,
-            'circle-color': '#f27407',
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#000'
-        },
-        layout: { 'visibility': 'none' }
-    });
 
     // --- 6. Activate all risk groups on launch ---
     setActiveGroup('ShowAll');
@@ -297,7 +301,8 @@ map.on('load', () => {
 
 
 
-    const hospitalToggle = document.getElementById('toggle-hospitals');
+    // HOSPITALS TOGGLE
+const hospitalToggle = document.getElementById('toggle-hospitals');
 if (hospitalToggle) {
     hospitalToggle.checked = false; // hidden on load
     hospitalToggle.addEventListener('change', function (e) {
@@ -309,8 +314,27 @@ if (hospitalToggle) {
             );
         }
     });
-
 }
+
+// SCHOOLS TOGGLE
+const schoolToggle = document.getElementById('toggle-schools');
+if (schoolToggle) {
+    schoolToggle.checked = false; // hidden on load
+    schoolToggle.addEventListener('change', function (e) {
+        if (map.getLayer('schools-symbol')) {
+            map.setLayoutProperty(
+                'schools-symbol',
+                'visibility',
+                e.target.checked ? 'visible' : 'none'
+            );
+        }
+    });
+}
+
+
+
+
+
 
 
 
@@ -348,11 +372,11 @@ function setActiveGroup(riskGroup) {
         if (!map.getLayer(layerId)) return;
         if (riskGroup === 'ShowAll') {
             map.setLayoutProperty(layerId, 'visibility', 'visible');
-            map.setPaintProperty(layerId, 'fill-opacity', 1);
+            map.setPaintProperty(layerId, 'fill-opacity', 0.9);
         } else {
             if (layer.id.toLowerCase() === riskGroup.toLowerCase()) {
                 map.setLayoutProperty(layerId, 'visibility', 'visible');
-                map.setPaintProperty(layerId, 'fill-opacity', 1);
+                map.setPaintProperty(layerId, 'fill-opacity', 0.9);
             } else {
                 map.setLayoutProperty(layerId, 'visibility', 'none');
             }
