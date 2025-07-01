@@ -1,19 +1,10 @@
-// Mapbox access token
+// --- Mapbox Access Token ---
 mapboxgl.accessToken = 'pk.eyJ1IjoiajAwYnkiLCJhIjoiY2x1bHUzbXZnMGhuczJxcG83YXY4czJ3ayJ9.S5PZpU9VDwLMjoX_0x5FDQ';
 
+// --- New Jersey Map Boundaries ---
+const njBbox = [-75.5596, 38.7887, -73.8854, 41.3572]; // [minLng, minLat, maxLng, maxLat]
 
-
-// New Jersey bounding box: [minLng, minLat, maxLng, maxLat]
-const njBbox = [
-    -75.5596, // southwest longitude
-    38.7887,  // southwest latitude
-    -73.8854, // northeast longitude
-    41.3572   // northeast latitude
-];
-
-
-
-// Color palette for risk groups
+// --- Color Palette for Displacement Risk Groups ---
 const riskColors = {
     Crisis: '#dd4000',
     Emigrating: '#f27407',
@@ -21,7 +12,7 @@ const riskColors = {
     Stable: '#f7c320'
 };
 
-// County vector tileset definitions
+// --- County Vector Tileset Definitions ---
 const countyLayers = [
     { id: 'bergen', tileset: '4a0dl24e', sourceLayer: 'Bergen-0le3bi' },
     { id: 'atlantic', tileset: '7nuy1a8k', sourceLayer: 'Atlantic-0gbji1' },
@@ -38,9 +29,7 @@ const countyLayers = [
     { id: 'ocean', tileset: 'ccwm0qbn', sourceLayer: 'Ocean-cgpepo' }
 ];
 
-
-
-// Initialize the map view
+// --- Initialize Mapbox Map ---
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/j00by/cmbqvtons000201qlgcox1gi5',
@@ -53,7 +42,7 @@ const map = new mapboxgl.Map({
     ]
 });
 
-// Build paint expressions based on the selected risk group
+// --- Helper: Paint Expression for County Risk Layers ---
 function getColorExpression(activeGroup) {
     if (activeGroup === 'ShowAll') {
         return [
@@ -74,19 +63,12 @@ function getColorExpression(activeGroup) {
     ];
 }
 
-// Add all county sources and layers once the map loads
+// ========== MAP LOAD ==========
 map.on('load', () => {
-
-
-
-    // Adding counties layer from mapbox
-
+    // --- 1. ADD COUNTY VECTOR TILE LAYERS ---
     countyLayers.forEach(county => {
-        map.addSource(county.id, {
-            type: 'vector',
-            url: `mapbox://j00by.${county.tileset}`
-        });
-
+        // County Polygon Fill (colored by risk group)
+        map.addSource(county.id, { type: 'vector', url: `mapbox://j00by.${county.tileset}` });
         map.addLayer({
             id: `${county.id}-risk`,
             type: 'fill',
@@ -98,7 +80,7 @@ map.on('load', () => {
                 'fill-opacity': 0.8
             }
         });
-
+        // County Polygon Outline
         map.addLayer({
             id: `${county.id}-risk-line`,
             type: 'line',
@@ -112,23 +94,14 @@ map.on('load', () => {
         });
     });
 
-
-
-
-    // FEMA-Rutgers: Load layers only when checkbox is clicked
-
+    // --- 2. FEMA Floodplain Layer (Toggled) ---
     const toggle = document.getElementById('toggle-floodplain');
-    toggle.checked = false; // force unchecked on load
-
+    toggle.checked = false; // Hide on load
     toggle.addEventListener('change', (e) => {
         if (e.target.checked) {
-            // If checked, add the FEMA source and layers
+            // Add FEMA layer if not present
             if (!map.getSource('fema_rutgers')) {
-                map.addSource('fema_rutgers', {
-                    type: 'vector',
-                    url: 'mapbox://j00by.77lcuflb'
-                });
-
+                map.addSource('fema_rutgers', { type: 'vector', url: 'mapbox://j00by.77lcuflb' });
                 map.addLayer({
                     id: 'fema_rutgers-fill',
                     type: 'fill',
@@ -140,7 +113,6 @@ map.on('load', () => {
                         'fill-antialias': true
                     }
                 });
-
                 map.addLayer({
                     id: 'fema_rutgers-outline',
                     type: 'line',
@@ -152,190 +124,159 @@ map.on('load', () => {
                     }
                 });
             } else {
-                // If already exists, show the layers
+                // Show if already present
                 map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'visible');
                 map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'visible');
             }
         } else {
-            // If unchecked, hide the layers if they exist
-            if (map.getLayer('fema_rutgers-fill')) {
-                map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'none');
-            }
-            if (map.getLayer('fema_rutgers-outline')) {
-                map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'none');
-            }
+            // Hide FEMA layer
+            if (map.getLayer('fema_rutgers-fill')) map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'none');
+            if (map.getLayer('fema_rutgers-outline')) map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'none');
         }
     });
 
-
-
-
-
-
-    // 1) ADD NJ COUNTIES
-    map.addSource('nj_counties', {
-        type: 'vector',
-        url: 'mapbox://j00by.d08646su'    // ← your tileset ID
-    });
-
-    // 2) Draw only the white outline (no fill)
+    // --- 3. NJ County Outlines (White) ---
+    map.addSource('nj_counties', { type: 'vector', url: 'mapbox://j00by.d08646su' });
     map.addLayer({
         id: 'nj_counties-outline',
         type: 'line',
         source: 'nj_counties',
-        'source-layer': 'county_boundaries',  // matches the "-l county_boundaries" name
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        paint: {
-            'line-color': '#ffffff',
-            'line-width': 1
-        }
+        'source-layer': 'county_boundaries',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 1 }
     });
 
-
-    // --- Add NJ Displacement Risk Parcel Layers on Load ---
-
+    // --- 4. Parcel Layers for Displacement Risk Groups ---
     window.parcelLayers = [
-        {
-            id: 'stable',
-            tileset: 'j00by.dxxv2rrd',
-            color: '#f7c320'
-        },
-        {
-            id: 'emigrating',
-            tileset: 'j00by.38l572x2',
-            color: '#f27407'
-        },
-        {
-            id: 'crisis',
-            tileset: 'j00by.cpk925km',
-            color: '#dd4000'
-        },
-        {
-            id: 'destination',
-            tileset: 'j00by.2pl97lme',
-            color: '#f2a007'
-        }
+        { id: 'stable',      tileset: 'j00by.dxxv2rrd', color: '#f7c320' },
+        { id: 'emigrating',  tileset: 'j00by.38l572x2', color: '#f27407' },
+        { id: 'crisis',      tileset: 'j00by.cpk925km', color: '#dd4000' },
+        { id: 'destination', tileset: 'j00by.2pl97lme', color: '#f2a007' }
     ];
-
     parcelLayers.forEach(layer => {
-        map.addSource(layer.id, {
-            type: 'vector',
-            url: `mapbox://${layer.tileset}`
-        });
-
+        map.addSource(layer.id, { type: 'vector', url: `mapbox://${layer.tileset}` });
         map.addLayer({
             id: `${layer.id}-fill`,
             type: 'fill',
             source: layer.id,
             'source-layer': 'parcels',
             minzoom: 7.5,
-            paint: {
-                'fill-color': layer.color,
-                'fill-opacity': 1
-            }
+            paint: { 'fill-color': layer.color, 'fill-opacity': 1 }
         });
-
         map.addLayer({
             id: `${layer.id}-outline`,
             type: 'line',
             source: layer.id,
             'source-layer': 'parcels',
             minzoom: 7.5,
-            paint: {
-                'line-color': '#333',
-                'line-width': 0.2
-            }
+            paint: { 'line-color': '#333', 'line-width': 0.2 }
         });
     });
 
+    // --- 5. POINT LAYERS: Hospitals & Schools (Hidden by Default) ---
+    // Hospitals
+    map.addSource('hospitals', {
+        type: 'geojson',
+        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.json'
+    });
+    map.addLayer({
+        id: 'hospitals-layer',
+        type: 'circle',
+        source: 'hospitals',
+        paint: {
+            'circle-radius': 5,
+            'circle-color': '#fff',
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#000'
+        },
+        layout: { 'visibility': 'none' }
+    });
 
+    // Elementary Schools
+    map.addSource('elementary-schools', {
+        type: 'geojson',
+        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/elementary-schools.json'
+    });
+    map.addLayer({
+        id: 'elementary-schools-layer',
+        type: 'circle',
+        source: 'elementary-schools',
+        paint: {
+            'circle-radius': 4,
+            'circle-color': '#f2a007',
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#000'
+        },
+        layout: { 'visibility': 'none' }
+    });
 
+    // Secondary Schools
+    map.addSource('secondary-schools', {
+        type: 'geojson',
+        data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/secondary-schools.json'
+    });
+    map.addLayer({
+        id: 'secondary-schools-layer',
+        type: 'circle',
+        source: 'secondary-schools',
+        paint: {
+            'circle-radius': 4,
+            'circle-color': '#f27407',
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#000'
+        },
+        layout: { 'visibility': 'none' }
+    });
 
-
-
-
+    // --- 6. Activate all risk groups on launch ---
     setActiveGroup('ShowAll');
 
-    // ✅ Add geocoder manually (not with 'top-right')
+    // --- 7. Mapbox Geocoder (Address Search Bar, Manual Placement) ---
     const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
         marker: false,
         placeholder: 'Search Address Here',
-        flyTo: {
-            zoom: 13,
-            bearing: 0,
-            speed: 1.2,
-            curve: 1,
-            easing: t => t
-        }
+        flyTo: { zoom: 13, bearing: 0, speed: 1.2, curve: 1, easing: t => t }
     });
-
-    // Create custom container for geocoder
+    // Custom Geocoder Container (so it doesn't conflict with Mapbox default UI)
     const geocoderContainer = document.createElement('div');
     geocoderContainer.id = 'custom-geocoder';
     geocoderContainer.style.position = 'absolute';
-    geocoderContainer.style.top = '50px';     // Change this value as needed
+    geocoderContainer.style.top = '50px';
     geocoderContainer.style.right = '20px';
     geocoderContainer.style.zIndex = '999';
     document.body.appendChild(geocoderContainer);
-
-    // Append the geocoder UI to the custom container
     geocoderContainer.appendChild(geocoder.onAdd(map));
-
-    // Re-check zoom level after geocoder fly
-    let searchMarker = null; // declare once globally
-
+    // Add green dot for searched address
+    let searchMarker = null;
     geocoder.on('result', (e) => {
-        // Remove existing marker if present
-        if (searchMarker) {
-            searchMarker.remove();
-        }
-
-        // Create a new marker element
+        if (searchMarker) searchMarker.remove();
         const el = document.createElement('div');
         el.style.width = '16px';
         el.style.height = '16px';
         el.style.borderRadius = '50%';
         el.style.backgroundColor = '#fff';
-        el.style.border = '4px solid #00ed3d'; // match your FEMA flood color
+        el.style.border = '4px solid #00ed3d';
         el.style.boxShadow = '0 0 6px rgba(0, 0, 0, 0.4)';
-
-        // Place marker at geocoded location
-        searchMarker = new mapboxgl.Marker(el)
-            .setLngLat(e.result.center)
-            .addTo(map);
+        searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
     });
-
-
-    // Optional: nudge animation after 5s of inactivity
+    // Subtle animation to draw attention to geocoder if not used
     const nudgeTimeout = setTimeout(() => {
         const geocoderEl = document.querySelector('.mapboxgl-ctrl-geocoder');
-        if (geocoderEl) {
-            geocoderEl.classList.add('nudge');
-        }
+        if (geocoderEl) geocoderEl.classList.add('nudge');
     }, 5000);
-
     function removeNudgeOnInteraction() {
         clearTimeout(nudgeTimeout);
         const geocoderEl = document.querySelector('.mapboxgl-ctrl-geocoder');
-        if (geocoderEl) {
-            geocoderEl.classList.remove('nudge');
-        }
+        if (geocoderEl) geocoderEl.classList.remove('nudge');
         map.off('mousemove', removeNudgeOnInteraction);
     }
     map.on('mousemove', removeNudgeOnInteraction);
 
+}); // --- END map.on('load') ---
 
-
-
-
-});
-
-// Button click handling
+// ========== BUTTON HANDLING: Displacement Risk Group Buttons ==========
 document.querySelectorAll('.risk-buttons button').forEach(btn => {
     btn.addEventListener('click', () => {
         const group = btn.dataset.group;
@@ -346,39 +287,28 @@ document.querySelectorAll('.risk-buttons button').forEach(btn => {
     });
 });
 
-// Update layer styles when a new group is selected
+// ========== LOGIC: Show/Hide Parcels and Color Counties by Group ==========
 function setActiveGroup(riskGroup) {
-    // Update county layers
+    // County layers: color and opacity
     countyLayers.forEach(county => {
         const layerId = `${county.id}-risk`;
         if (!map.getLayer(layerId)) return;
-
         map.setPaintProperty(layerId, 'fill-color', getColorExpression(riskGroup));
-        map.setPaintProperty(
-            layerId,
-            'fill-opacity',
+        map.setPaintProperty(layerId, 'fill-opacity',
             riskGroup === 'ShowAll'
                 ? 0.8
-                : [
-                    'case',
-                    ['==', ['get', 'RISK_GROUP'], riskGroup],
-                    0.85,
-                    0.12
-                ]
+                : ['case', ['==', ['get', 'RISK_GROUP'], riskGroup], 0.85, 0.12]
         );
     });
 
-    // Update parcel layers
+    // Parcel layers: show/hide by risk group
     parcelLayers.forEach(layer => {
         const layerId = `${layer.id}-fill`;
         if (!map.getLayer(layerId)) return;
-
         if (riskGroup === 'ShowAll') {
-            // Show all with full color
             map.setLayoutProperty(layerId, 'visibility', 'visible');
             map.setPaintProperty(layerId, 'fill-opacity', 1);
         } else {
-            // Show only matching, hide others
             if (layer.id.toLowerCase() === riskGroup.toLowerCase()) {
                 map.setLayoutProperty(layerId, 'visibility', 'visible');
                 map.setPaintProperty(layerId, 'fill-opacity', 1);
@@ -389,14 +319,13 @@ function setActiveGroup(riskGroup) {
     });
 }
 
-
-// Hide the loading indicator when the map is idle
+// ========== UX: Hide Loading Spinner when Map is Ready ==========
 map.on('idle', () => {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'none';
 });
 
-// Add hover cursor and click popups for each county layer
+// ========== COUNTY LAYER INTERACTIONS: Hover Cursor & Popup ==========
 countyLayers.forEach(county => {
     const layerId = `${county.id}-risk`;
 
@@ -412,13 +341,13 @@ countyLayers.forEach(county => {
         new mapboxgl.Popup({ offset: 4 })
             .setLngLat(e.lngLat)
             .setHTML(`
-        <strong>Risk Group:</strong> ${props.RISK_GROUP}<br>
-        <strong>County:</strong> ${props.COUNTY || county.id}
-      `)
+                <strong>Risk Group:</strong> ${props.RISK_GROUP}<br>
+                <strong>County:</strong> ${props.COUNTY || county.id}
+            `)
             .addTo(map);
     });
 
-    // scripts.js (after map init)
+    // Banner for zoom level (shows when zoomed out)
     function toggleBanner() {
         const banner = document.getElementById('zoom-banner');
         const visible = map.getZoom() < 13;
@@ -426,5 +355,5 @@ countyLayers.forEach(county => {
     }
     map.on('load', toggleBanner);
     map.on('zoom', toggleBanner);
-
 });
+
