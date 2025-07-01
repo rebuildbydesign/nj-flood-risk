@@ -180,33 +180,34 @@ map.on('load', () => {
         data: 'https://rebuildbydesign.github.io/nj-flood-risk/data/hospitals.geojson'
     });
     map.loadImage(
-    'https://rebuildbydesign.github.io/nj-flood-risk/img/hospital.png',
-    (error, image) => {
-        if (error) throw error;
-        // Prevent duplicate add
-        if (!map.hasImage('hospital-icon')) {
-            map.addImage('hospital-icon', image, { sdf: false });
-        }
+  'https://rebuildbydesign.github.io/nj-flood-risk/img/hospital.png',
+  (error, image) => {
+    if (error) throw error;
+    if (!map.hasImage('hospital-icon')) {
+      map.addImage('hospital-icon', image, { sdf: false });
+    }
 
-        // Now add the hospital symbol layer
-        map.addLayer({
-            id: 'hospitals-symbol',
-            type: 'symbol',
-            source: 'hospitals',
-            layout: {
-                'icon-image': 'hospital-icon',
-                'icon-allow-overlap': true,
-                'icon-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    7, 0.08,   // Small statewide
-                    10, 0.12,  // Medium
-                    14, 0.20   // Large at high zoom
-                ],
-                'visibility': 'none'
-            }
-        });
+    map.addLayer({
+      id: 'hospitals-symbol',
+      type: 'symbol',
+      source: 'hospitals',
+      layout: {
+        'icon-image': 'hospital-icon',
+        'icon-allow-overlap': true,
+        'icon-size': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          7, 0.22,   // ~14px at state view
+          9, 0.32,   // ~20px
+          11, 0.52,  // ~33px
+          13, 0.75,  // ~48px
+          15, 1.0    // 64px at high zoom
+        ],
+        'visibility': 'none'
+      }
+    });
+
     }
 );
 

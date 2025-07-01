@@ -9,7 +9,7 @@
 .mapboxgl-ctrl-geocoder {
     position: absolute;
     left: auto; /* Reset left to auto */
-    background-color: #dd4000; /* Background */
+    background-color:  rgba(255, 255, 255, 0.75); /* Background */
     width: 225px;
     color: #000; /* Text color */
     min-width: 225px;
