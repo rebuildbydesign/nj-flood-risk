@@ -1,9 +1,6 @@
 // --- Mapbox Access Token ---
 mapboxgl.accessToken = 'pk.eyJ1IjoiajAwYnkiLCJhIjoiY2x1bHUzbXZnMGhuczJxcG83YXY4czJ3ayJ9.S5PZpU9VDwLMjoX_0x5FDQ';
 
-// --- New Jersey Map Boundaries ---
-const njBbox = [-75.5596, 38.7887, -73.8854, 41.3572]; // [minLng, minLat, maxLng, maxLat]
-
 // --- Color Palette for Displacement Risk Groups ---
 const riskColors = {
     Crisis: '#dd4000',
@@ -11,23 +8,6 @@ const riskColors = {
     Destination: '#f2a007',
     Stable: '#f7c320'
 };
-
-// --- County Vector Tileset Definitions ---
-const countyLayers = [
-    { id: 'bergen', tileset: '4a0dl24e', sourceLayer: 'Bergen-0le3bi' },
-    { id: 'atlantic', tileset: '7nuy1a8k', sourceLayer: 'Atlantic-0gbji1' },
-    { id: 'monmouth', tileset: '94o2bnvg', sourceLayer: 'Monmouth-8y2nrf' },
-    { id: 'union', tileset: 'ctef8rld', sourceLayer: 'Union-40malz' },
-    { id: 'middlesex', tileset: '9mq4ynku', sourceLayer: 'Middlesex-9em40p' },
-    { id: 'morris', tileset: '1zq8vok1', sourceLayer: 'Morris-02umxx' },
-    { id: 'essex', tileset: 'do09sqee', sourceLayer: 'Essex-6xihac' },
-    { id: 'camden', tileset: 'cpqj8pqn', sourceLayer: 'Camden-0u4811' },
-    { id: 'mercer', tileset: '6beabe3u', sourceLayer: 'Mercer-cc6gdz' },
-    { id: 'burlington', tileset: 'aefhywzh', sourceLayer: 'Burlington-6xh3f7' },
-    { id: 'cape_may_hudson', tileset: '2vkc4woq', sourceLayer: 'CapeMay_Hudson-6o1nnv' },
-    { id: 'reduced', tileset: '6repdkmg', sourceLayer: 'reduced-au5soh' },
-    { id: 'ocean', tileset: 'ccwm0qbn', sourceLayer: 'Ocean-cgpepo' }
-];
 
 // --- Initialize Mapbox Map ---
 const map = new mapboxgl.Map({
@@ -42,117 +22,16 @@ const map = new mapboxgl.Map({
     ]
 });
 
-// --- Helper: Paint Expression for County Risk Layers ---
-function getColorExpression(activeGroup) {
-    if (activeGroup === 'ShowAll') {
-        return [
-            'match',
-            ['get', 'RISK_GROUP'],
-            'Crisis', riskColors.Crisis,
-            'Emigrating', riskColors.Emigrating,
-            'Destination', riskColors.Destination,
-            'Stable', riskColors.Stable,
-            '#444'
-        ];
-    }
-    return [
-        'case',
-        ['==', ['get', 'RISK_GROUP'], activeGroup],
-        riskColors[activeGroup],
-        '#333'
-    ];
-}
+// --- Displacement Risk Group Layers ---
+window.parcelLayers = [
+    { id: 'stable', tileset: 'j00by.dxxv2rrd', color: '#f7c320' },
+    { id: 'emigrating', tileset: 'j00by.38l572x2', color: '#f27407' },
+    { id: 'crisis', tileset: 'j00by.cpk925km', color: '#dd4000' },
+    { id: 'destination', tileset: 'j00by.2pl97lme', color: '#f2a007' }
+];
 
-// ========== MAP LOAD ==========
 map.on('load', () => {
-    // --- 1. ADD COUNTY VECTOR TILE LAYERS ---
-    countyLayers.forEach(county => {
-        // County Polygon Fill (colored by risk group)
-        map.addSource(county.id, { type: 'vector', url: `mapbox://j00by.${county.tileset}` });
-        map.addLayer({
-            id: `${county.id}-risk`,
-            type: 'fill',
-            source: county.id,
-            'source-layer': county.sourceLayer,
-            minzoom: 13,
-            paint: {
-                'fill-color': getColorExpression('ShowAll'),
-                'fill-opacity': 0.8
-            }
-        });
-        // County Polygon Outline
-        map.addLayer({
-            id: `${county.id}-risk-line`,
-            type: 'line',
-            source: county.id,
-            'source-layer': county.sourceLayer,
-            minzoom: 13,
-            paint: {
-                'line-color': '#666',
-                'line-width': 0.25
-            }
-        });
-    });
-
-    // --- 2. FEMA Floodplain Layer (Toggled) ---
-    const toggle = document.getElementById('toggle-floodplain');
-    toggle.checked = false; // Hide on load
-    toggle.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            // Add FEMA layer if not present
-            if (!map.getSource('fema_rutgers')) {
-                map.addSource('fema_rutgers', { type: 'vector', url: 'mapbox://j00by.77lcuflb' });
-                map.addLayer({
-                    id: 'fema_rutgers-fill',
-                    type: 'fill',
-                    source: 'fema_rutgers',
-                    'source-layer': 'floodplain',
-                    paint: {
-                        'fill-color': '#004494',
-                        'fill-opacity': 0.3,
-                        'fill-antialias': true
-                    }
-                });
-                map.addLayer({
-                    id: 'fema_rutgers-outline',
-                    type: 'line',
-                    source: 'fema_rutgers',
-                    'source-layer': 'floodplain',
-                    paint: {
-                        'line-color': '#004494',
-                        'line-width': 1
-                    }
-                });
-            } else {
-                // Show if already present
-                map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'visible');
-                map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'visible');
-            }
-        } else {
-            // Hide FEMA layer
-            if (map.getLayer('fema_rutgers-fill')) map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'none');
-            if (map.getLayer('fema_rutgers-outline')) map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'none');
-        }
-    });
-
-    // --- 3. NJ County Outlines (White) ---
-    map.addSource('nj_counties', { type: 'vector', url: 'mapbox://j00by.d08646su' });
-    map.addLayer({
-        id: 'nj_counties-outline',
-        type: 'line',
-        source: 'nj_counties',
-        'source-layer': 'county_boundaries',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': '#fff', 'line-width': 1 }
-    });
-
-    // --- 4. Parcel Layers for Displacement Risk Groups ---
-    window.parcelLayers = [
-        { id: 'stable',      tileset: 'j00by.dxxv2rrd', color: '#f7c320' },
-        { id: 'emigrating',  tileset: 'j00by.38l572x2', color: '#f27407' },
-        { id: 'crisis',      tileset: 'j00by.cpk925km', color: '#dd4000' },
-        { id: 'destination', tileset: 'j00by.2pl97lme', color: '#f2a007' }
-    ];
+    // 1. Add parcel layers
     parcelLayers.forEach(layer => {
         map.addSource(layer.id, { type: 'vector', url: `mapbox://${layer.tileset}` });
         map.addLayer({
@@ -161,7 +40,7 @@ map.on('load', () => {
             source: layer.id,
             'source-layer': 'parcels',
             minzoom: 7.5,
-            paint: { 'fill-color': layer.color, 'fill-opacity': 1 }
+            paint: { 'fill-color': layer.color, 'fill-opacity': 0.9 }
         });
         map.addLayer({
             id: `${layer.id}-outline`,
@@ -173,90 +52,155 @@ map.on('load', () => {
         });
     });
 
-    // --- 5. POINT LAYERS: Hospitals & Schools (Hidden by Default) ---
-    // Hospitals
-    map.addSource('hospitals', {
-        type: 'geojson',
-        data: '/data/hospitals.geojson'
-    });
-    map.loadImage(
-  '/img/hospitals.png',
-  (error, image) => {
-    if (error) throw error;
-    if (!map.hasImage('hospital-icon')) {
-      map.addImage('hospital-icon', image, { sdf: false });
+    // 2. FEMA Floodplain Layer (Toggle)
+    const toggle = document.getElementById('toggle-floodplain');
+    if (toggle) {
+        toggle.checked = false;
+        toggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                if (!map.getSource('fema_rutgers')) {
+                    map.addSource('fema_rutgers', { type: 'vector', url: 'mapbox://j00by.77lcuflb' });
+                    map.addLayer({
+                        id: 'fema_rutgers-fill',
+                        type: 'fill',
+                        source: 'fema_rutgers',
+                        'source-layer': 'floodplain',
+                        paint: {
+                            'fill-color': '#004494',
+                            'fill-opacity': 0.3,
+                            'fill-antialias': true
+                        }
+                    });
+                    map.addLayer({
+                        id: 'fema_rutgers-outline',
+                        type: 'line',
+                        source: 'fema_rutgers',
+                        'source-layer': 'floodplain',
+                        paint: {
+                            'line-color': '#004494',
+                            'line-width': 1
+                        }
+                    });
+                } else {
+                    map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'visible');
+                    map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'visible');
+                }
+            } else {
+                if (map.getLayer('fema_rutgers-fill')) map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'none');
+                if (map.getLayer('fema_rutgers-outline')) map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'none');
+            }
+        });
     }
 
+    // 3. County Outlines (White)
+    map.addSource('nj_counties', { type: 'vector', url: 'mapbox://j00by.d08646su' });
     map.addLayer({
-      id: 'hospitals-symbol',
-      type: 'symbol',
-      source: 'hospitals',
-      layout: {
-        'icon-image': 'hospital-icon',
-        'icon-allow-overlap': true,
-        'icon-size': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-            7, 0.18,   // 18px at statewide (100*0.18)
-          9, 0.26,   // 26px
-          11, 0.42,  // 42px
-          13, 0.65,  // 65px
-          15, 1.0    // 100px (full size) at close zoom
-        ],
-        'visibility': 'none'
-      }
+        id: 'nj_counties-outline',
+        type: 'line',
+        source: 'nj_counties',
+        'source-layer': 'county_boundaries',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: { 'line-color': '#fff', 'line-width': 1 }
     });
 
-    }
-);
-
-
-    // School Point Locations of NJ (Public, Private and Charter)
-
-    map.addSource('schools', {
-        type: 'geojson',
-        data: '/data/schools.geojson'
-    });
-    map.loadImage(
-  '/img/schools.png',
-  (error, image) => {
-    if (error) throw error;
-    if (!map.hasImage('schools-icon')) {
-      map.addImage('schools-icon', image, { sdf: false });
-    }
-
-    map.addLayer({
-      id: 'schools-symbol',
-      type: 'symbol',
-      source: 'schools',
-      layout: {
-        'icon-image': 'schools-icon',
-        'icon-allow-overlap': true,
-        'icon-size': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-            7, 0.18,   // 18px at statewide (100*0.18)
-          9, 0.26,   // 26px
-          11, 0.42,  // 42px
-          13, 0.65,  // 65px
-          15, 1.0    // 100px (full size) at close zoom
-        ],
-        'visibility': 'none'
-      }
+    // 4. Hospitals (toggle)
+    map.addSource('hospitals', { type: 'geojson', data: '/data/hospitals.geojson' });
+    map.loadImage('/img/hospitals.png', (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage('hospital-icon')) {
+            map.addImage('hospital-icon', image, { sdf: false });
+        }
+        map.addLayer({
+            id: 'hospitals-symbol',
+            type: 'symbol',
+            source: 'hospitals',
+            layout: {
+                'icon-image': 'hospital-icon',
+                'icon-allow-overlap': true,
+                'icon-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    7, 0.18, 9, 0.26, 11, 0.42, 13, 0.65, 15, 1.0
+                ],
+                'visibility': 'none'
+            }
+        });
     });
 
-    }
-);
+    // 5. Schools (toggle)
+    map.addSource('schools', { type: 'geojson', data: '/data/schools.geojson' });
+    map.loadImage('/img/schools.png', (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage('schools-icon')) {
+            map.addImage('schools-icon', image, { sdf: false });
+        }
+        map.addLayer({
+            id: 'schools-symbol',
+            type: 'symbol',
+            source: 'schools',
+            layout: {
+                'icon-image': 'schools-icon',
+                'icon-allow-overlap': true,
+                'icon-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    7, 0.16, 9, 0.22, 11, 0.32, 13, 0.50, 15, 0.8
+                ],
+                'visibility': 'none'
+            }
+        });
+    });
 
-
-
-
-    // --- 6. Activate all risk groups on launch ---
+    // 6. Show all risk groups on launch
     setActiveGroup('ShowAll');
 
-    // --- 7. Mapbox Geocoder (Address Search Bar, Manual Placement) ---
+
+let riskGroupsVisible = true; // Start with risk groups visible
+
+const toggleAllBtn = document.getElementById('toggle-risk-groups');
+if (toggleAllBtn) {
+    // Set to "SHOW ALL" with active state on load
+    toggleAllBtn.textContent = 'SHOW ALL';
+    toggleAllBtn.classList.add('active');
+
+    toggleAllBtn.addEventListener('click', function () {
+        riskGroupsVisible = !riskGroupsVisible;
+        if (riskGroupsVisible) {
+            setActiveGroup('ShowAll');
+            this.textContent = 'SHOW ALL';
+            this.classList.add('active');
+        } else {
+            parcelLayers.forEach(layer => {
+                const layerId = `${layer.id}-fill`;
+                if (map.getLayer(layerId)) {
+                    map.setLayoutProperty(layerId, 'visibility', 'none');
+                }
+            });
+            this.textContent = 'HIDE ALL';
+            this.classList.add('active');
+        }
+    });
+}
+
+document.querySelectorAll('.risk-buttons button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const group = btn.dataset.group;
+        setActiveGroup(group);
+        document.querySelectorAll('.risk-buttons button')
+            .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Reset toggle button
+        if (toggleAllBtn) {
+            riskGroupsVisible = true;
+            toggleAllBtn.textContent = 'SHOW ALL';
+            toggleAllBtn.classList.add('active');
+        }
+    });
+});
+
+
+
+
+
+    // 7. Mapbox Geocoder (Address Search)
     const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
@@ -264,16 +208,14 @@ map.on('load', () => {
         placeholder: 'Search Address Here',
         flyTo: { zoom: 13, bearing: 0, speed: 1.2, curve: 1, easing: t => t }
     });
-    // Custom Geocoder Container (so it doesn't conflict with Mapbox default UI)
     const geocoderContainer = document.createElement('div');
     geocoderContainer.id = 'custom-geocoder';
     geocoderContainer.style.position = 'absolute';
-    geocoderContainer.style.top = '50px';
-    geocoderContainer.style.right = '20px';
+    geocoderContainer.style.top = '35px';
+    geocoderContainer.style.right = '10px';
     geocoderContainer.style.zIndex = '999';
     document.body.appendChild(geocoderContainer);
     geocoderContainer.appendChild(geocoder.onAdd(map));
-    // Add green dot for searched address
     let searchMarker = null;
     geocoder.on('result', (e) => {
         if (searchMarker) searchMarker.remove();
@@ -286,62 +228,46 @@ map.on('load', () => {
         el.style.boxShadow = '0 0 6px rgba(0, 0, 0, 0.4)';
         searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
     });
-    // Subtle animation to draw attention to geocoder if not used
-    const nudgeTimeout = setTimeout(() => {
-        const geocoderEl = document.querySelector('.mapboxgl-ctrl-geocoder');
-        if (geocoderEl) geocoderEl.classList.add('nudge');
-    }, 5000);
-    function removeNudgeOnInteraction() {
-        clearTimeout(nudgeTimeout);
-        const geocoderEl = document.querySelector('.mapboxgl-ctrl-geocoder');
-        if (geocoderEl) geocoderEl.classList.remove('nudge');
-        map.off('mousemove', removeNudgeOnInteraction);
+
+    // --- 8. Toggles for Hospitals and Schools ---
+    const hospitalToggle = document.getElementById('toggle-hospitals');
+    if (hospitalToggle) {
+        hospitalToggle.checked = false;
+        hospitalToggle.addEventListener('change', function (e) {
+            if (map.getLayer('hospitals-symbol')) {
+                map.setLayoutProperty('hospitals-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
+            }
+        });
     }
-    map.on('mousemove', removeNudgeOnInteraction);
+    const schoolToggle = document.getElementById('toggle-schools');
+    if (schoolToggle) {
+        schoolToggle.checked = false;
+        schoolToggle.addEventListener('change', function (e) {
+            if (map.getLayer('schools-symbol')) {
+                map.setLayoutProperty('schools-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
+            }
+        });
+    }
 
+    // --- 9. Zoom Banner (Top Right) ---
+    const banner = document.getElementById('zoom-banner');
+    function toggleBanner() {
+        if (!banner) return;
+        const visible = map.getZoom() < 13;
+        banner.classList.toggle('hidden', !visible);
+    }
+    map.on('load', toggleBanner);
+    map.on('zoom', toggleBanner);
 
-
-    // HOSPITALS TOGGLE
-const hospitalToggle = document.getElementById('toggle-hospitals');
-if (hospitalToggle) {
-    hospitalToggle.checked = false; // hidden on load
-    hospitalToggle.addEventListener('change', function (e) {
-        if (map.getLayer('hospitals-symbol')) {
-            map.setLayoutProperty(
-                'hospitals-symbol',
-                'visibility',
-                e.target.checked ? 'visible' : 'none'
-            );
-        }
+    // Hide loading spinner when map is ready
+    map.on('idle', () => {
+        const loading = document.getElementById('loading');
+        if (loading) loading.style.display = 'none';
     });
-}
-
-// SCHOOLS TOGGLE
-const schoolToggle = document.getElementById('toggle-schools');
-if (schoolToggle) {
-    schoolToggle.checked = false; // hidden on load
-    schoolToggle.addEventListener('change', function (e) {
-        if (map.getLayer('schools-symbol')) {
-            map.setLayoutProperty(
-                'schools-symbol',
-                'visibility',
-                e.target.checked ? 'visible' : 'none'
-            );
-        }
-    });
-}
-
-
-
-
-
-
-
-
-
 }); // --- END map.on('load') ---
 
-// ========== BUTTON HANDLING: Displacement Risk Group Buttons ==========
+
+// --- Risk Group Buttons ---
 document.querySelectorAll('.risk-buttons button').forEach(btn => {
     btn.addEventListener('click', () => {
         const group = btn.dataset.group;
@@ -352,21 +278,8 @@ document.querySelectorAll('.risk-buttons button').forEach(btn => {
     });
 });
 
-// ========== LOGIC: Show/Hide Parcels and Color Counties by Group ==========
+// --- Show/Hide Parcels by Group ---
 function setActiveGroup(riskGroup) {
-    // County layers: color and opacity
-    countyLayers.forEach(county => {
-        const layerId = `${county.id}-risk`;
-        if (!map.getLayer(layerId)) return;
-        map.setPaintProperty(layerId, 'fill-color', getColorExpression(riskGroup));
-        map.setPaintProperty(layerId, 'fill-opacity',
-            riskGroup === 'ShowAll'
-                ? 0.8
-                : ['case', ['==', ['get', 'RISK_GROUP'], riskGroup], 0.85, 0.12]
-        );
-    });
-
-    // Parcel layers: show/hide by risk group
     parcelLayers.forEach(layer => {
         const layerId = `${layer.id}-fill`;
         if (!map.getLayer(layerId)) return;
@@ -381,44 +294,34 @@ function setActiveGroup(riskGroup) {
                 map.setLayoutProperty(layerId, 'visibility', 'none');
             }
         }
+
+
     });
 }
 
-// ========== UX: Hide Loading Spinner when Map is Ready ==========
-map.on('idle', () => {
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
-});
+// --- HOW TO USE MODAL HANDLING ---
+        document.addEventListener('DOMContentLoaded', function () {
+            var banner = document.getElementById('howto-banner');
+            var modal = document.getElementById('howto-modal');
+            var closeBtn = document.getElementById('howto-close');
 
-// ========== COUNTY LAYER INTERACTIONS: Hover Cursor & Popup ==========
-countyLayers.forEach(county => {
-    const layerId = `${county.id}-risk`;
-
-    map.on('mouseenter', layerId, () => {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', layerId, () => {
-        map.getCanvas().style.cursor = '';
-    });
-
-    map.on('click', layerId, e => {
-        const props = e.features[0].properties;
-        new mapboxgl.Popup({ offset: 4 })
-            .setLngLat(e.lngLat)
-            .setHTML(`
-                <strong>Risk Group:</strong> ${props.RISK_GROUP}<br>
-                <strong>County:</strong> ${props.COUNTY || county.id}
-            `)
-            .addTo(map);
-    });
-
-    // Banner for zoom level (shows when zoomed out)
-    function toggleBanner() {
-        const banner = document.getElementById('zoom-banner');
-        const visible = map.getZoom() < 13;
-        banner.classList.toggle('hidden', !visible);
-    }
-    map.on('load', toggleBanner);
-    map.on('zoom', toggleBanner);
-});
-
+            if (banner && modal && closeBtn) {
+                banner.addEventListener('click', function () {
+                    modal.classList.remove('hidden');
+                    modal.focus();
+                });
+                closeBtn.addEventListener('click', function () {
+                    modal.classList.add('hidden');
+                });
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });

@@ -43,7 +43,7 @@
       Rebuild by Design analyzed 3.4 million properties statewide, including residential, commercial, and industrial parcels, to reflect the full scope of New Jersey’s exposure. Each parcel is classified into one of four displacement risk groups, showing who is most likely to relocate, and where they are likely to move.
     </p>
     <div class="risk-buttons">
-      <button data-group="ShowAll" class="active" style="background:#222; color: #fff; border: 1px solid #888;">SHOW ALL</button>
+      <button id="toggle-risk-groups" class="toggle-all active" style="background:#222; color: #fff; border: 1px solid #888;">SHOW ALL</button>
       <button data-group="Crisis" style="background:#dd4000">CRISIS</button>
       <button data-group="Emigrating" style="background:#f27407">EMIGRATING</button>
       <button data-group="Destination" style="background:#f2a007">DESTINATION</button>
@@ -72,10 +72,27 @@
     <div><span class="legend-key" style="background:#f7c320"></span> STABLE: Low Flood Risk, Higher Income</div>
   </div>
 
-  <!-- Zoom banner -->
-  <div id="zoom-banner" class="zoom-banner hidden">
-    ℹ️  Click here to learn how to use this map
+ <!-- HOW TO USE BANNER -->
+<div id="howto-banner" class="howto-banner" tabindex="0">
+  ℹ️ <b>Need Help? See How This Map Works</b>
+</div>
+
+<!-- HOW TO USE MODAL -->
+<div id="howto-modal" class="howto-modal hidden" tabindex="-1">
+  <div class="howto-content">
+    <button id="howto-close" aria-label="Close">&times;</button>
+    <h2>How to Use This Map</h2>
+    <ul>
+      <li><b>Search an Address:</b> Use the address bar (top right) to find your location.</li>
+      <li><b>Risk Group Filters:</b> Click buttons (Show All, Crisis, Emigrating, etc.) to view different displacement risk groups.</li>
+      <li><b>Toggle Layers:</b> Check boxes to turn <b>2050 Flood Risk</b>, <b>Hospitals</b>, <b>Schools</b>, and <b>Parks</b> on/off.</li>
+      <li><b>Zoom In:</b> For more parcel-level detail, zoom in. Some features may only appear at higher zoom levels.</li>
+      <li><b>Legend:</b> See the color key for risk types in the lower right.</li>
+    </ul>
+    <p style="font-size:0.97em;color:#888;">For more details on data sources and methodology, visit <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" rel="noopener">NJ Flood Risk = Financial Risk</a> report by Rebuild by Design.</p>
   </div>
+</div>
+
 
   <!-- JS scripts -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
