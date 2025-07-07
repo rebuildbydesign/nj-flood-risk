@@ -66,19 +66,9 @@ map.on('load', () => {
                         source: 'fema_rutgers',
                         'source-layer': 'floodplain',
                         paint: {
-                            'fill-color': '#004494',
-                            'fill-opacity': 0.3,
+                            'fill-color': '#0054ff',
+                            'fill-opacity': 0.8,
                             'fill-antialias': true
-                        }
-                    });
-                    map.addLayer({
-                        id: 'fema_rutgers-outline',
-                        type: 'line',
-                        source: 'fema_rutgers',
-                        'source-layer': 'floodplain',
-                        paint: {
-                            'line-color': '#004494',
-                            'line-width': 1
                         }
                     });
                 } else {
@@ -149,52 +139,77 @@ map.on('load', () => {
         });
     });
 
+
+    // 6. Parks (toggle)
+    map.addSource('parks', { type: 'geojson', data: '/data/parks.geojson' });
+    map.loadImage('/img/parks.png', (error, image) => {
+        if (error) throw error;
+        if (!map.hasImage('parks-icon')) {
+            map.addImage('parks-icon', image, { sdf: false });
+        }
+        map.addLayer({
+            id: 'parks-symbol',
+            type: 'symbol',
+            source: 'parks',
+            layout: {
+                'icon-image': 'parks-icon',
+                'icon-allow-overlap': true,
+                'icon-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    7, 0.16, 9, 0.22, 11, 0.32, 13, 0.50, 15, 0.8
+                ],
+                'visibility': 'none'
+            }
+        });
+    });
+
+
     // 6. Show all risk groups on launch
     setActiveGroup('ShowAll');
 
 
-let riskGroupsVisible = true; // Start with risk groups visible
+    let riskGroupsVisible = true; // Start with risk groups visible
 
-const toggleAllBtn = document.getElementById('toggle-risk-groups');
-if (toggleAllBtn) {
-    // Set to "SHOW ALL" with active state on load
-    toggleAllBtn.textContent = 'SHOW ALL';
-    toggleAllBtn.classList.add('active');
+    const toggleAllBtn = document.getElementById('toggle-risk-groups');
+    if (toggleAllBtn) {
+        // Set to "SHOW ALL" with active state on load
+        toggleAllBtn.textContent = 'SHOW ALL';
+        toggleAllBtn.classList.add('active');
 
-    toggleAllBtn.addEventListener('click', function () {
-        riskGroupsVisible = !riskGroupsVisible;
-        if (riskGroupsVisible) {
-            setActiveGroup('ShowAll');
-            this.textContent = 'SHOW ALL';
-            this.classList.add('active');
-        } else {
-            parcelLayers.forEach(layer => {
-                const layerId = `${layer.id}-fill`;
-                if (map.getLayer(layerId)) {
-                    map.setLayoutProperty(layerId, 'visibility', 'none');
-                }
-            });
-            this.textContent = 'HIDE ALL';
-            this.classList.add('active');
-        }
+        toggleAllBtn.addEventListener('click', function () {
+            riskGroupsVisible = !riskGroupsVisible;
+            if (riskGroupsVisible) {
+                setActiveGroup('ShowAll');
+                this.textContent = 'SHOW ALL';
+                this.classList.add('active');
+            } else {
+                parcelLayers.forEach(layer => {
+                    const layerId = `${layer.id}-fill`;
+                    if (map.getLayer(layerId)) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none');
+                    }
+                });
+                this.textContent = 'HIDE ALL';
+                this.classList.add('active');
+            }
+        });
+    }
+
+    document.querySelectorAll('.risk-buttons button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const group = btn.dataset.group;
+            setActiveGroup(group);
+            document.querySelectorAll('.risk-buttons button')
+                .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Reset toggle button
+            if (toggleAllBtn) {
+                riskGroupsVisible = true;
+                toggleAllBtn.textContent = 'SHOW ALL';
+                toggleAllBtn.classList.add('active');
+            }
+        });
     });
-}
-
-document.querySelectorAll('.risk-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const group = btn.dataset.group;
-        setActiveGroup(group);
-        document.querySelectorAll('.risk-buttons button')
-            .forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // Reset toggle button
-        if (toggleAllBtn) {
-            riskGroupsVisible = true;
-            toggleAllBtn.textContent = 'SHOW ALL';
-            toggleAllBtn.classList.add('active');
-        }
-    });
-});
 
 
 
@@ -219,15 +234,23 @@ document.querySelectorAll('.risk-buttons button').forEach(btn => {
     let searchMarker = null;
     geocoder.on('result', (e) => {
         if (searchMarker) searchMarker.remove();
+
+        // Use a large, high-contrast SVG marker
         const el = document.createElement('div');
-        el.style.width = '16px';
-        el.style.height = '16px';
-        el.style.borderRadius = '50%';
-        el.style.backgroundColor = '#fff';
-        el.style.border = '4px solid #00ed3d';
-        el.style.boxShadow = '0 0 6px rgba(0, 0, 0, 0.4)';
+        el.innerHTML = `
+        <svg width="38" height="48" viewBox="0 0 38 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="19" cy="19" rx="14" ry="14" fill="#000" stroke="#ff00f6" stroke-width="4"/>
+            <ellipse cx="19" cy="19" rx="8" ry="8" fill="#fff"/>
+            <path d="M19 47C23.5 37.5 33 27 19 27C5 27 14.5 37.5 19 47Z" fill="#ff00f6" stroke="#000" stroke-width="2"/>
+        </svg>
+    `;
+        el.style.width = '38px';
+        el.style.height = '48px';
+        el.style.display = 'block';
+        el.style.zIndex = '2000';
         searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
     });
+
 
     // --- 8. Toggles for Hospitals and Schools ---
     const hospitalToggle = document.getElementById('toggle-hospitals');
@@ -248,6 +271,17 @@ document.querySelectorAll('.risk-buttons button').forEach(btn => {
             }
         });
     }
+
+    const parksToggle = document.getElementById('toggle-parks');
+    if (parksToggle) {
+        parksToggle.checked = false;
+        parksToggle.addEventListener('change', function (e) {
+            if (map.getLayer('parks-symbol')) {
+                map.setLayoutProperty('parks-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
+            }
+        });
+    }
+
 
     // --- 9. Zoom Banner (Top Right) ---
     const banner = document.getElementById('zoom-banner');
@@ -300,28 +334,28 @@ function setActiveGroup(riskGroup) {
 }
 
 // --- HOW TO USE MODAL HANDLING ---
-        document.addEventListener('DOMContentLoaded', function () {
-            var banner = document.getElementById('howto-banner');
-            var modal = document.getElementById('howto-modal');
-            var closeBtn = document.getElementById('howto-close');
+document.addEventListener('DOMContentLoaded', function () {
+    var banner = document.getElementById('howto-banner');
+    var modal = document.getElementById('howto-modal');
+    var closeBtn = document.getElementById('howto-close');
 
-            if (banner && modal && closeBtn) {
-                banner.addEventListener('click', function () {
-                    modal.classList.remove('hidden');
-                    modal.focus();
-                });
-                closeBtn.addEventListener('click', function () {
-                    modal.classList.add('hidden');
-                });
-                modal.addEventListener('click', function (e) {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
-                document.addEventListener('keydown', function (e) {
-                    if (e.key === 'Escape') {
-                        modal.classList.add('hidden');
-                    }
-                });
+    if (banner && modal && closeBtn) {
+        banner.addEventListener('click', function () {
+            modal.classList.remove('hidden');
+            modal.focus();
+        });
+        closeBtn.addEventListener('click', function () {
+            modal.classList.add('hidden');
+        });
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
             }
         });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+});
