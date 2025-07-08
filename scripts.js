@@ -9,18 +9,29 @@ const riskColors = {
     Stable: '#f7c320'
 };
 
+// --- Dynamic zoom/center for mobile ---
+let mapCenter = [-75.32569, 40.15205];
+let mapZoom = 7.75;
+
+// Adjust for mobile
+if (window.innerWidth <= 600) {
+    mapCenter = [-74.8, 39.9];
+    mapZoom = 6.65;
+}
+
 // --- Initialize Mapbox Map ---
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/j00by/cmbqvtons000201qlgcox1gi5',
-    center: [-75.32569, 40.15205],
-    zoom: 7.75,
-    minZoom: 7.75,
+    center: mapCenter,
+    zoom: mapZoom,
+    minZoom: 6.5,   // Allow zoom out on mobile if needed
     maxBounds: [
         [-78.27621, 38.89837],
         [-72.85168, 41.38302]
     ]
 });
+
 
 // --- Displacement Risk Group Layers ---
 window.parcelLayers = [
@@ -214,42 +225,60 @@ map.on('load', () => {
 
 
 
+// 7. Mapbox Geocoder (Address Search)
+const geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    mapboxgl: mapboxgl,
+    marker: false,
+    placeholder: 'Search Address Here',
+    flyTo: { zoom: 13, bearing: 0, speed: 1.2, curve: 1, easing: t => t }
+});
+const geocoderContainer = document.createElement('div');
+geocoderContainer.id = 'custom-geocoder';
+geocoderContainer.style.position = 'absolute';
+geocoderContainer.style.right = '10px';
+geocoderContainer.style.zIndex = '999';
 
-    // 7. Mapbox Geocoder (Address Search)
-    const geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken,
-        mapboxgl: mapboxgl,
-        marker: false,
-        placeholder: 'Search Address Here',
-        flyTo: { zoom: 13, bearing: 0, speed: 1.2, curve: 1, easing: t => t }
-    });
-    const geocoderContainer = document.createElement('div');
-    geocoderContainer.id = 'custom-geocoder';
-    geocoderContainer.style.position = 'absolute';
-    geocoderContainer.style.top = '35px';
-    geocoderContainer.style.right = '10px';
-    geocoderContainer.style.zIndex = '999';
-    document.body.appendChild(geocoderContainer);
-    geocoderContainer.appendChild(geocoder.onAdd(map));
-    let searchMarker = null;
-    geocoder.on('result', (e) => {
-        if (searchMarker) searchMarker.remove();
+// Responsive top positioning
+if (window.innerWidth <= 800) {
+    geocoderContainer.style.top = '5px';   // mobile/tablet
+} else {
+    geocoderContainer.style.top = '35px';   // desktop
+}
 
-        // Use a large, high-contrast SVG marker
-        const el = document.createElement('div');
-        el.innerHTML = `
+document.body.appendChild(geocoderContainer);
+geocoderContainer.appendChild(geocoder.onAdd(map));
+
+let searchMarker = null;
+geocoder.on('result', (e) => {
+    if (searchMarker) searchMarker.remove();
+
+    // Use a large, high-contrast SVG marker
+    const el = document.createElement('div');
+    el.innerHTML = `
         <svg width="38" height="48" viewBox="0 0 38 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="19" cy="19" rx="14" ry="14" fill="#000" stroke="#ff00f6" stroke-width="4"/>
             <ellipse cx="19" cy="19" rx="8" ry="8" fill="#fff"/>
             <path d="M19 47C23.5 37.5 33 27 19 27C5 27 14.5 37.5 19 47Z" fill="#ff00f6" stroke="#000" stroke-width="2"/>
         </svg>
     `;
-        el.style.width = '38px';
-        el.style.height = '48px';
-        el.style.display = 'block';
-        el.style.zIndex = '2000';
-        searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
-    });
+    el.style.width = '38px';
+    el.style.height = '48px';
+    el.style.display = 'block';
+    el.style.zIndex = '2000';
+    searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
+});
+
+// Optional: adjust on window resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 800) {
+        geocoderContainer.style.top = '5px';
+    } else {
+        geocoderContainer.style.top = '35px';
+    }
+});
+
+
 
 
     // --- 8. Toggles for Hospitals and Schools ---
