@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -16,51 +17,85 @@ a {
   font-weight: 600;
   word-break: break-word;
 }
-a:hover, a:focus {
+
+a:hover,
+a:focus {
   color: #f27407;
   text-decoration: underline wavy;
   outline: none;
 }
-a:visited { color: #8651a6; }
-a:active  { color: #f27407; }
+
+a:visited {
+  color: #8651a6;
+}
+
+a:active {
+  color: #f27407;
+}
+
 .howto-content a {
   color: #dd4000;
   font-weight: 600;
 }
+
 /* Remove underline from info-box links unless hovered */
-.info-box a { text-decoration: none; }
-.info-box a:hover { text-decoration: underline; }
+.info-box a {
+  text-decoration: none;
+}
+
+.info-box a:hover {
+  text-decoration: underline;
+}
 
 /* --- Map Container and Info Box --- */
 #map {
-  position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: #111;
 }
 
 .info-box {
-  position: absolute; top: 24px; left: 24px;
+  position: absolute;
+  top: 24px;
+  left: 24px;
   z-index: 2;
-  background: rgba(255,255,255,0.83);
+  background: rgba(255, 255, 255, 0.83);
   color: #111;
   padding: 18px 18px 14px 18px;
-  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
-  box-shadow: 0 4px 18px rgba(0,0,0,0.20);
-  width: 39vw; max-width: 470px; min-width: 180px;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.20);
+  width: 39vw;
+  max-width: 470px;
+  min-width: 180px;
   border-radius: 4px;
   transition: background 0.3s, color 0.3s;
 }
+
 .info-box h1 {
   font-size: 1.04rem;
   margin: 0 0 9px 0;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
+
 .info-box p {
-  font-size: 0.92rem; line-height: 1.5; margin-bottom: 12px; color: #222;
+  font-size: 0.92rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  color: #222;
 }
+
 .info-box .risk-buttons {
-  display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 7px;
 }
+
 .info-box .risk-buttons button {
   font-family: inherit;
   flex: 1 1 auto;
@@ -76,15 +111,18 @@ a:active  { color: #f27407; }
   background: #ececec;
   transition: outline 0.2s, background 0.2s;
 }
+
 .info-box .risk-buttons button:focus,
 .info-box .risk-buttons button.active {
   outline: 2px solid #fff;
   background: #e0e0e0;
 }
+
 .info-box .risk-buttons button:hover {
   opacity: 0.96;
-  box-shadow: 0 0 0 2px rgba(180,180,180,0.4);
+  box-shadow: 0 0 0 2px rgba(180, 180, 180, 0.4);
 }
+
 .asset-toggles label {
   margin-right: 13px;
   font-size: 0.89em;
@@ -104,6 +142,7 @@ a:active  { color: #f27407; }
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .toggle-all.active {
   background: #f4f4f4;
   color: #111;
@@ -111,18 +150,22 @@ a:active  { color: #f27407; }
 
 /* --- Legend --- */
 #legend {
-  position: absolute; bottom: 40px; right: 20px; z-index: 2;
-  background: rgba(0,0,0,0.88);
+  position: absolute;
+  bottom: 40px;
+  right: 20px;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.88);
   color: #fff;
   padding: 10px 13px;
   font-size: 0.8rem;
   font-weight: 500;
   border-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.23);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.23);
   max-width: 300px;
   line-height: 1.6;
 }
+
 #legend strong {
   display: block;
   font-size: 0.96em;
@@ -130,20 +173,28 @@ a:active  { color: #f27407; }
   margin-bottom: 5px;
   color: #fff;
 }
+
 #legend div {
-  display: flex; align-items: center; margin-top: 4px;
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
 }
+
 .legend-key {
   display: inline-block;
-  width: 11px; height: 11px;
-  margin-right: 7px; border-radius: 2px; flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  margin-right: 7px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* --- Geocoder --- */
 .mapboxgl-ctrl-geocoder {
   z-index: 10 !important;
   position: absolute !important;
-  top: 20px; right: 20px;
+  top: 20px;
+  right: 20px;
   max-width: 320px;
   border: 1px solid #fff;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
@@ -153,8 +204,10 @@ a:active  { color: #f27407; }
 
 /* --- How To Use Banner & Modal --- */
 .howto-banner {
-  position: absolute; top: 12px; right: 18px;
-  background: rgba(0,0,0,0.91);
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  background: rgba(0, 0, 0, 0.91);
   color: #fff;
   padding: 6px 12px;
   font-size: 0.89rem;
@@ -164,30 +217,45 @@ a:active  { color: #f27407; }
   transition: background 0.2s, opacity 0.3s;
   font-family: inherit;
 }
-.howto-banner:hover, .howto-banner:focus {
+
+.howto-banner:hover,
+.howto-banner:focus {
   background: #23232b;
   outline: 2px solid #eee;
 }
 
 .howto-modal {
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.55);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2000; opacity: 1; transition: opacity 0.3s;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.3s;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
-.howto-modal.hidden { opacity: 0; pointer-events: none; }
+
+.howto-modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .howto-content {
   background: #fff;
   border-radius: 4px;
   max-width: 500px;
   padding: 22px 17px 14px 19px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   position: relative;
   color: #1a1a1a;
   font-family: inherit;
 }
+
 .howto-content h2 {
   margin-top: 0;
   font-size: 1.02em;
@@ -195,6 +263,7 @@ a:active  { color: #f27407; }
   letter-spacing: 0.01em;
   font-family: inherit;
 }
+
 .howto-content ul {
   margin: 12px 0 8px 0;
   padding-left: 16px;
@@ -202,41 +271,73 @@ a:active  { color: #f27407; }
   line-height: 1.43;
   font-family: inherit;
 }
+
 #howto-close {
-  position: absolute; top: 11px; right: 14px;
-  background: none; border: none;
+  position: absolute;
+  top: 11px;
+  right: 14px;
+  background: none;
+  border: none;
   font-size: 1.3em;
   color: #888;
   cursor: pointer;
   transition: color 0.13s;
 }
-#howto-close:hover { color: #dd4000; }
+
+#howto-close:hover {
+  color: #dd4000;
+}
 
 /* --- Mobile Responsiveness --- */
 @media (max-width: 800px) {
+
   /* Slightly smaller base font size */
-  html { font-size: 0.94em; }
+  html {
+    font-size: 0.94em;
+  }
+
   /* Info box adapts width, padding, top position */
   .info-box {
-    width: 94vw; left: 3vw; right: 3vw; max-width: 99vw; min-width: 0;
+    width: 94vw;
+    left: 3vw;
+    right: 3vw;
+    max-width: 99vw;
+    min-width: 0;
     padding: 10px 6px 10px 8px;
-    font-size: 0.98em; top: 6px;
+    font-size: 0.98em;
+    top: 6px;
   }
+
   /* Legend adapts to bottom and side, max-width and font-size */
   #legend {
-    bottom: 8px; right: 4px; max-width: 99vw; padding: 7px 5px; font-size: 0.83em;
+    bottom: 8px;
+    right: 4px;
+    max-width: 99vw;
+    padding: 7px 5px;
+    font-size: 0.83em;
   }
+
   /* How-to banner and modal sizing */
   .howto-banner {
-    right: 6px; top: 6px; font-size: 0.83em; padding: 5px 7px;
+    right: 6px;
+    top: 6px;
+    font-size: 0.83em;
+    padding: 5px 7px;
   }
+
   .howto-content {
-    max-width: 97vw; padding: 13px 4px 11px 7px; font-size: 0.98em;
+    max-width: 97vw;
+    padding: 13px 4px 11px 7px;
+    font-size: 0.98em;
   }
 }
 
 @media (max-width: 800px) {
-  html { font-size: 0.85em; } /* Slightly smaller root font for all */
+  html {
+    font-size: 0.85em;
+  }
+
+  /* Slightly smaller root font for all */
 
   /* Info Box: shrink width and padding */
   .info-box {
@@ -250,20 +351,24 @@ a:active  { color: #f27407; }
     top: 8px;
     border-radius: 8px;
   }
+
   .info-box h1 {
     font-size: 0.97rem;
     margin-bottom: 2px;
     line-height: 1.18;
   }
+
   .info-box p {
     font-size: 0.80rem;
     margin-bottom: 6px;
     line-height: 1.33;
   }
+
   .info-box .risk-buttons {
     gap: 2px;
     margin-bottom: 4px;
   }
+
   .info-box .risk-buttons button,
   .toggle-all {
     font-size: 0.85rem;
@@ -271,10 +376,12 @@ a:active  { color: #f27407; }
     min-width: 22vw;
     border-radius: 4px;
   }
+
   .asset-toggles label {
     font-size: 0.8em;
     margin-right: 4px;
   }
+
   .asset-toggles input[type="checkbox"] {
     transform: scale(1);
     margin-right: 1.5px;
@@ -318,18 +425,72 @@ a:active  { color: #f27407; }
     font-size: 0.72em;
     border-radius: 7px;
   }
-  #legend strong { font-size: 1em; }
-  #legend div { margin-top: 2px; }
+
+  #legend strong {
+    font-size: 1em;
+  }
+
+  #legend div {
+    margin-top: 2px;
+  }
 
   /* Optional: make checkboxes align better */
-  .asset-toggles label { display: inline-flex; align-items: center; }
+  .asset-toggles label {
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* Hide long/short howto text by screen width */
-.howto-short { display: none; }
-.howto-long { display: inline; }
+.howto-short {
+  display: none;
+}
+
+.howto-long {
+  display: inline;
+}
 
 @media (max-width: 800px) {
-  .howto-short { display: inline; }
-  .howto-long { display: none; }
+  .howto-short {
+    display: inline;
+  }
+
+  .howto-long {
+    display: none;
+  }
 }
+
+/* County popup information */
+
+/* County popup information */
+.mapboxgl-popup {
+  z-index: 1100 !important; /* Higher than legend and most UI elements */
+}
+
+.mapboxgl-popup-content {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.19);
+  border: 1.5px solid #0054ff;
+  background: #fff;
+  padding: 18px 14px 13px 16px;
+  color: #222;
+  font-size: 1.01em;
+}
+
+
+.mapboxgl-popup-close-button {
+  font-size: 1.45em;
+  font-weight: bold;
+  color: #0054ff;
+}
+
+.mapboxgl-popup-content a {
+  color: #0054ff;
+  font-weight: 600;
+}
+
+.mapboxgl-popup-content a:hover {
+  color: #dd4000;
+}
+
