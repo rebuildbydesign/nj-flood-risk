@@ -290,7 +290,7 @@ map.on('load', () => {
     });
 
     // Load your county geojson (update path if needed)
-    fetch('/data/county_popup.json')
+    fetch('data/county_popup.json')
         .then(response => response.json())
         .then(geojson => {
             map.addSource('counties', { type: 'geojson', data: geojson });
