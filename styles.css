@@ -26,7 +26,7 @@ a:focus {
 }
 
 a:visited {
-  color: #8651a6;
+  color: #f27407;
 }
 
 a:active {
@@ -120,7 +120,7 @@ a:active {
 
 .info-box .risk-buttons button:hover {
   opacity: 0.96;
-  box-shadow: 0 0 0 2px rgba(180, 180, 180, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.944);
 }
 
 .asset-toggles label {
@@ -160,7 +160,7 @@ a:active {
   font-size: 0.8rem;
   font-weight: 500;
   border-radius: 0px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.524);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.23);
   max-width: 300px;
   line-height: 1.6;
@@ -189,26 +189,13 @@ a:active {
   flex-shrink: 0;
 }
 
-/* --- Geocoder --- */
-.mapboxgl-ctrl-geocoder {
-  z-index: 10 !important;
-  position: absolute !important;
-  top: 20px;
-  right: 20px;
-  max-width: 320px;
-  border: 1px solid #fff;
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
-  font-size: 0.93rem !important;
-  border-radius: 4px !important;
-}
-
 /* --- How To Use Banner & Modal --- */
 .howto-banner {
   position: absolute;
   top: 12px;
-  right: 18px;
-  background: rgba(0, 0, 0, 0.91);
-  color: #fff;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.83);
+  color: #000;
   padding: 6px 12px;
   font-size: 0.89rem;
   z-index: 3;
@@ -220,7 +207,7 @@ a:active {
 
 .howto-banner:hover,
 .howto-banner:focus {
-  background: #23232b;
+  background: #949494;
   outline: 2px solid #eee;
 }
 
@@ -236,9 +223,7 @@ a:active {
   justify-content: center;
   z-index: 2000;
   opacity: 1;
-  transition: opacity 0.3s;
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-}
+  transition: opacity 0.3s;}
 
 .howto-modal.hidden {
   opacity: 0;
@@ -253,12 +238,15 @@ a:active {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   position: relative;
   color: #1a1a1a;
-  font-family: inherit;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;  /* Use explicit family */
+  font-size: 0.92em; /* Match body */
+  line-height: 1; /* Good default for readability */
 }
 
 .howto-content h2 {
   margin-top: 0;
-  font-size: 1.02em;
+  font-size: 1.04em;
+  line-height: 1.2;  /* Looser and more readable */
   font-weight: 700;
   letter-spacing: 0.01em;
   font-family: inherit;
@@ -267,9 +255,13 @@ a:active {
 .howto-content ul {
   margin: 12px 0 8px 0;
   padding-left: 16px;
-  font-size: 0.97em;
-  line-height: 1.43;
+  font-size: 1em;
+  line-height: 1.4;  /* Match content body */
   font-family: inherit;
+}
+
+.howto-content li {
+  margin-bottom: 8px;  /* Add a little space between list items */
 }
 
 #howto-close {
@@ -326,7 +318,7 @@ a:active {
   }
 
   .howto-content {
-    max-width: 97vw;
+    max-width: 80vw;
     padding: 13px 4px 11px 7px;
     font-size: 0.98em;
   }
@@ -387,21 +379,10 @@ a:active {
     margin-right: 1.5px;
   }
 
-  /* Geocoder (search bar): shrink and move below banner, no overlap */
-  .mapboxgl-ctrl-geocoder {
-    top: 48px !important;
-    right: 4vw !important;
-    width: 28vw !important;
-    min-width: 0 !important;
-    max-width: 92vw !important;
-    font-size: 0.82rem !important;
-    border-radius: 0px !important;
-    z-index: 40 !important;
-  }
 
   /* How-to Banner: smaller */
   .howto-banner {
-    right: 4vw;
+    right: 15px;
     top: 8px;
     font-size: 0.65em;
     padding: 4px 7px;
@@ -410,7 +391,7 @@ a:active {
 
   /* How-to Modal: slightly smaller and tighter */
   .howto-content {
-    max-width: 97vw;
+    max-width: 80vw;
     padding: 8px 6px 8px 8px;
     font-size: 0.9em;
     border-radius: 0px;
@@ -471,7 +452,7 @@ a:active {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   border-radius: 0px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.19);
-  border: 1.5px solid #0054ff;
+  border: 2px solid #000;
   background: #fff;
   padding: 18px 14px 13px 16px;
   color: #222;
@@ -483,17 +464,29 @@ a:active {
 .mapboxgl-popup-close-button {
   font-size: 1.45em;
   font-weight: bold;
-  color: #0054ff;
+  color: #000;
 }
 
 .mapboxgl-popup-content a {
-  color: #0054ff;
+  color: #dd4000;
+  text-decoration: underline;
+  transition: color 0.17s, text-decoration 0.17s;
   font-weight: 600;
+  word-break: break-word;
 }
 
-.mapboxgl-popup-content a:hover {
-  color: #dd4000;
+.mapboxgl-popup-content a:hover,
+.mapboxgl-popup-content a:focus {
+  color: #f27407;
+  text-decoration: underline wavy;
+  outline: none;
 }
+
+.mapboxgl-popup-content a:visited,
+.mapboxgl-popup-content a:active {
+  color: #f27407;
+}
+
 
 @media (max-width: 800px) {
   .mapboxgl-popup-content {
@@ -516,5 +509,47 @@ a:active {
   .mapboxgl-popup-content table {
     font-size: 0.85em !important;
     /* shrink table text */
+  }
+}
+
+.risk-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 7px;
+  flex-direction: row;
+}
+
+.risk-row {
+  display: flex;
+  gap: 7px;
+}
+
+@media (max-width: 800px) {
+  .risk-buttons {
+    flex-direction: column;
+    gap: 0; /* No extra gap here, so we control spacing with margin */
+  }
+  .risk-row {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 3px; /* <-- ADDS vertical space between rows */
+  }
+  .risk-buttons button,
+  .toggle-all {
+    min-width: unset;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .risk-buttons > #toggle-risk-groups {
+    width: 100%;
+    margin-bottom: 3px;
+  }
+  /* Optional: remove bottom margin from last row so it doesn't push content below */
+  .risk-row:last-child {
+    margin-bottom: 0;
   }
 }

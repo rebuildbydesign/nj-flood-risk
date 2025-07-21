@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>NJ Flood Risk = Financial Risk</title>
@@ -10,8 +11,10 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 
   <!-- MAPBOX GEOCODER v5.0.0 -->
-  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" rel="stylesheet">
-  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"
+    rel="stylesheet">
+  <script
+    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
 
   <!-- CUSTOM BLACK GEOCODER STYLE -->
   <link rel="stylesheet" href="geocoder.css" type="text/css" />
@@ -40,25 +43,30 @@
   <div class="info-box">
     <h1>NEW JERSEY: FLOOD RISK = FINANCIAL RISK</h1>
     <p>
-      Rebuild by Design analyzed 3.4 million properties statewide, including residential, commercial, and industrial parcels, to reflect the full scope of New Jersey’s exposure. Each parcel is classified into one of four displacement risk groups, showing who is most likely to relocate, and where they are likely to move.
+      Flooding threatens the homes, businesses, and financial stability of communities across New Jersey. Rebuild by Design mapped flood risk for <b>3.4 million properties statewide</b> to show how flooding could impact people and places. Each property is classified into one of four groups, revealing who faces the greatest risk of costly flood damage—and who may be forced to relocate in the future.
     </p>
+    <p>Click a toggle below to view different displacement risk groups.</p>
     <div class="risk-buttons">
-      <button id="toggle-risk-groups" class="toggle-all active" style="background:#222; color: #fff; border: 1px solid #888;">SHOW ALL</button>
-      <button data-group="Crisis" style="background:#dd4000">CRISIS</button>
-      <button data-group="Emigrating" style="background:#f27407">EMIGRATING</button>
-      <button data-group="Destination" style="background:#f2a007">DESTINATION</button>
-      <button data-group="Stable" style="background:#f7c320">STABLE</button>
+      <button id="toggle-risk-groups" class="toggle-all active"
+        style="background:#222; color: #fff; border: 1px solid #888;">SHOW ALL</button>
+      <div class="risk-row">
+        <button data-group="Crisis" style="background:#dd4000">CRISIS</button>
+        <button data-group="Emigrating" style="background:#f27407">EMIGRATING</button>
+      </div>
+      <div class="risk-row">
+        <button data-group="Destination" style="background:#f2a007">DESTINATION</button>
+        <button data-group="Stable" style="background:#f7c320">STABLE</button>
+      </div>
     </div>
-    <br />
-  
-  
+
+    <!--   FLOOD RISK TOGGLE ON AND OFF, V1 VERSION HAD PUBLIC ASSETS. CHANGED TO POPUP
     <div class="asset-toggles">
       <label><input type="checkbox" id="toggle-floodplain" checked> 2050 Flood Risk</label>
-</div>
+</div> -->
 
-  
+
   </div>
-  
+
 
   <!-- LEGEND -->
   <div id="legend">
@@ -69,11 +77,11 @@
     <div><span class="legend-key" style="background:#f7c320"></span> STABLE: Low Flood Risk, Higher Income</div>
   </div>
 
- <!-- HOW TO USE BANNER -->
-<div id="howto-banner" class="howto-banner" tabindex="0">
-  <span class="howto-short">ℹ️ Need Help?</span>
-  <span class="howto-long">ℹ️ Need Help? See How This Map Works</span>
-</div>
+  <!-- HOW TO USE BANNER -->
+  <div id="howto-banner" class="howto-banner" tabindex="0">
+    <span class="howto-short">ℹ️ Need Help?</span>
+    <span class="howto-long">ℹ️ Need Help?</span>
+  </div>
 
 
 <!-- HOW TO USE MODAL -->
@@ -82,20 +90,25 @@
     <button id="howto-close" aria-label="Close">&times;</button>
     <h2>How to Use This Map</h2>
     <ul>
-      <li><b>Search an Address:</b> Use the address bar (top right) to find your location.</li>
-      <li><b>Risk Group Filters:</b> Click buttons (Show All, Crisis, Emigrating, etc.) to view different displacement risk groups.</li>
-      <li><b>Toggle Layers:</b> Check boxes to turn <b>2050 Flood Risk</b>, <b>Hospitals</b>, <b>Schools</b>, and <b>Parks</b> on/off.</li>
-      <li><b>Zoom In:</b> For more parcel-level detail, zoom in. Some features may only appear at higher zoom levels.</li>
-      <li><b>Legend:</b> See the color key for risk types in the lower right.</li>
+      <li><b>Toggle Displacement Risk Groups:</b> Use the buttons below the title to view properties most at risk of flooding and forced relocation.</li>
+      <li><b>Search for an Address:</b> Use the search bar (top right) to zoom directly to any property in New Jersey.</li>
+      <li><b>Click on a County:</b> Select any county to learn more about local flood risk and critical infrastructure at risk.</li>
+      <li><b>Legend:</b> Use the color key (bottom right) to understand risk group types.</li>
+      <li><b>Zoom In:</b> Get more detail by zooming in. Some features appear only at higher zoom levels.</li>
     </ul>
-    <p style="font-size:0.97em;color:#888;">For more details on data sources and methodology, visit <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" rel="noopener">NJ Flood Risk = Financial Risk</a> report by Rebuild by Design.</p>
+    <p style="font-size:0.97em;color:#888;">For more details on data sources and methodology, visit the <a
+        href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" rel="noopener">NJ Flood Risk = Financial
+        Risk</a> report by Rebuild by Design.</p>
   </div>
 </div>
 
 
+
   <!-- JS scripts -->
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1/mapbox-gl-geocoder.min.js"></script>
+  <script
+    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1/mapbox-gl-geocoder.min.js"></script>
   <script src="scripts.js"></script>
 </body>
+
 </html>

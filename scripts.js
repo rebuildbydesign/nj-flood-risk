@@ -58,7 +58,7 @@ function percentBar(n, d, p) {
         return `
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
-            <div style="background:#1976d2;width:0%;height:100%;"></div>
+            <div style="background:#0054ff;width:0%;height:100%;"></div>
           </div>
           <span style="width:38px;text-align:right;color:#aaa;font-weight:600;">–</span>
         </div>
@@ -68,9 +68,9 @@ function percentBar(n, d, p) {
     return `
       <div style="display:flex;align-items:center;gap:8px;">
         <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
-          <div style="background:#1976d2;width:${pct}%;height:100%;"></div>
+          <div style="background:#0054ff;width:${pct}%;height:100%;"></div>
         </div>
-        <span style="width:38px;text-align:right;color:#1976d2;font-weight:600;">${pct}%</span>
+        <span style="width:38px;text-align:right;color:#0054ff;font-weight:600;">${pct}%</span>
       </div>
     `;
 }
@@ -112,17 +112,19 @@ const riskBar = `
 
     return `
     <div style="font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;max-width:410px;">
-      <div style="border-left:6px solid #1976d2;padding-left:12px;margin-bottom:8px;">
+      <div style="border-left:6px solid #0054ff;padding-left:12px;margin-bottom:8px;">
         <div style="font-weight:700;font-size:1.5em;">${props.COUNTY} COUNTY</div>
         <div style="font-size:1.01em;color:#111;margin-top:2px;">
           <b>${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</b> of parcels (<b>$${formatNumber(props.MARKET_VALUE_RISK_2024)}</b> value) are at high flood risk now.<br>
-          <span style="color:#1976d2;font-weight:600;">
+          <span style="color:#0054ff;font-weight:600;">
             By 2050: ${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}% ($${formatNumber(props.MARKET_VALUE_RISK_2050)} at risk)
           </span>
         </div>
       </div>
       <div style="margin-bottom:7px;">
-        <div style="font-weight:600;margin-bottom:2px;letter-spacing:0.01em;">🏠 Displacement Risk Parcels</div>
+        <div style="font-weight:600;margin-bottom:2px;letter-spacing:0.01em;">🏠 Displacement Risk & Migration (Parcel-Level)
+        </div>
+        
         <div style="font-size:0.97em;color:#000;margin-bottom:4px;font-weight:500;">
           Total parcels: ${totalParcels}
         </div>
@@ -134,7 +136,7 @@ const riskBar = `
           <tr style="color:${riskColors.Stable}"><td>⬤ Stable</td><td style="text-align:right;">${formatNumber(props.STABLE_PARCELS)}</td><td style="text-align:right;">${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%</td></tr>
         </table>
       </div>
-      <div style="font-weight:600;margin-bottom:3px;letter-spacing:0.01em;">🛡️ Public Assets at Flood Risk</div>
+      <div style="font-weight:600;margin-bottom:3px;letter-spacing:0.01em;">🛡️ Critical Facilities in Flood-Prone Areas</div>
       <table style="width:100%;font-size:0.99em;margin-bottom:2px;">
         ${assetRow('Airports', props.AIRPORTS_AT_RISK, props.TOTAL_AIRPORTS, props.PERC_AIRPORTS_AT_RISK)}
         ${assetRow('Hospitals', props.HOSPITALS_AT_RISK, props.TOTAL_HOSPITALS, props.PERC_HOSPITALS_AT_RISK)}
@@ -148,7 +150,7 @@ const riskBar = `
   * <i>Includes assets on the 2050 floodplain or within 100ft to better capture the full impact of flooding on adjacent neighbors and blocks.</i>
 </div>
       <div class="cta" style="margin-top:5px;">
-        <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" style="font-weight:700;color:#1976d2;text-decoration:underline;">Explore Rebuild by Design’s Strategy for a Safer New Jersey</a>
+        <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" style="font-weight:700;color:#dd4000;text-decoration:underline;">Explore Rebuild by Design’s Strategy for a Safer New Jersey</a>
       </div>
     </div>
     `;
@@ -392,7 +394,7 @@ map.on('load', () => {
 
     // Responsive top positioning
     if (window.innerWidth <= 800) {
-    geocoderContainer.style.top = '8px';   // mobile/tablet, raised a bit
+    geocoderContainer.style.top = '15px';   // mobile/tablet, raised a bit
     geocoderContainer.style.right = '5px'; // leaves room for Need Help? (adjust if needed)
     geocoderContainer.style.width = '30vw';
     geocoderContainer.style.maxWidth = '30vw';

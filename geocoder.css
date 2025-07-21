@@ -9,9 +9,9 @@
 .mapboxgl-ctrl-geocoder {
     position: absolute;
     left: auto; /* Reset left to auto */
-    background-color:  rgba(255, 255, 255, 0.75); /* Background */
+    background-color:  #dd4000; /* Background */
     width: 225px;
-    color: #000; /* Text color */
+    color: #fff; /* Text color */
     z-index: 999;
     transition: width .25s, min-width .25s;
     border: 1px solid rgba(255, 255, 255, 0.369); /* Match legend border */
@@ -33,11 +33,11 @@
     border: none;
     background-color: transparent;
     margin: 0;
-    height: 40px;
-    color: #000; /* White text */
+    height: 35px;
+    color: #fff; /* White text */
     font-weight: bold; /* Bold text */
     padding: 10px;
-    font-size: 16px;
+    font-size: 1em;
     font-family: 'Arial';
     padding-left: 40px; /* Move text to the right to avoid blocking the icon */
     text-overflow: ellipsis;
@@ -50,13 +50,13 @@
 }
 
 .mapboxgl-ctrl-geocoder--input:focus {
-    color: #000; /* White text */
+    color: #fff; /* White text */
     outline: thin dotted;
 }
 
 /* Set placeholder text color to white and font family to Arial */
 .mapboxgl-ctrl-geocoder--input::placeholder {
-    color: #000; /* White text */
+    color: #fff; /* White text */
     opacity: 1; /* Ensures the color is not faded */
     font-family: 'Arial'; /* Font family */
 }
@@ -232,3 +232,16 @@
 .nudge {
     animation: nudge 0.5s ease-in-out infinite;
 }
+
+
+  /* Geocoder (search bar): shrink and move below banner, no overlap */
+  .mapboxgl-ctrl-geocoder {
+    top: 25px !important;
+    right: 10px !important;
+    width: 20vw !important;
+    min-width: 20vw !important;
+    max-width: 92vw !important;
+    font-size: 0.82rem !important;
+    border-radius: 0px !important;
+    z-index: 40 !important;
+  }
