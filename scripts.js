@@ -54,28 +54,27 @@ function formatNumber(num) {
 }
 
 function percentBar(n, d, p) {
-    // If missing/invalid, show placeholder
     if (!d || isNaN(n) || isNaN(d) || d === 0 || isNaN(p)) {
         return `
         <div style="display:flex;align-items:center;gap:8px;">
-          <div style="flex:1;background:#e9ecef;height:14px;border-radius:6px;overflow:hidden;margin-right:6px;">
+          <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
             <div style="background:#1976d2;width:0%;height:100%;"></div>
           </div>
           <span style="width:38px;text-align:right;color:#aaa;font-weight:600;">–</span>
         </div>
         `;
     }
-    // Cap percent for display, fallback if weird value
     let pct = Math.max(0, Math.min(Number(p) * 100, 100)).toFixed(0);
     return `
       <div style="display:flex;align-items:center;gap:8px;">
-        <div style="flex:1;background:#e9ecef;height:14px;border-radius:6px;overflow:hidden;margin-right:6px;">
+        <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
           <div style="background:#1976d2;width:${pct}%;height:100%;"></div>
         </div>
         <span style="width:38px;text-align:right;color:#1976d2;font-weight:600;">${pct}%</span>
       </div>
     `;
 }
+
 
 function countyPopupHTML(props) {
     const riskColors = {
@@ -85,14 +84,15 @@ function countyPopupHTML(props) {
         Stable: '#f7c320'
     };
 
-    // Displacement parcels bar
-    const riskBar = `
-    <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;margin-bottom:8px;margin-top:2px;">
-      <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
-      <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
-      <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
-      <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
-    </div>`;
+    // Displacement parcels bar - square edges, consistent height
+const riskBar = `
+  <div style="display:flex;height:16px;border-radius:0px;overflow:hidden;margin-bottom:8px;margin-top:2px;">
+    <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
+    <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
+    <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
+    <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
+  </div>`;
+
 
     // Asset row with improved NaN/undefined handling and blue percent bar
     function assetRow(label, atRisk, total, pct) {
@@ -392,10 +392,17 @@ map.on('load', () => {
 
     // Responsive top positioning
     if (window.innerWidth <= 800) {
-        geocoderContainer.style.top = '5px';   // mobile/tablet
-    } else {
-        geocoderContainer.style.top = '35px';   // desktop
-    }
+    geocoderContainer.style.top = '8px';   // mobile/tablet, raised a bit
+    geocoderContainer.style.right = '5px'; // leaves room for Need Help? (adjust if needed)
+    geocoderContainer.style.width = '30vw';
+    geocoderContainer.style.maxWidth = '30vw';
+} else {
+    geocoderContainer.style.top = '35px';   // desktop
+    geocoderContainer.style.right = '5px';
+    geocoderContainer.style.width = '120px';
+    geocoderContainer.style.maxWidth = '120px';
+}
+
 
     document.body.appendChild(geocoderContainer);
     geocoderContainer.appendChild(geocoder.onAdd(map));

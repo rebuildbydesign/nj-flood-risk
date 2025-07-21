@@ -12,7 +12,6 @@
     background-color:  rgba(255, 255, 255, 0.75); /* Background */
     width: 225px;
     color: #000; /* Text color */
-    min-width: 225px;
     z-index: 999;
     transition: width .25s, min-width .25s;
     border: 1px solid rgba(255, 255, 255, 0.369); /* Match legend border */
@@ -232,34 +231,4 @@
 
 .nudge {
     animation: nudge 0.5s ease-in-out infinite;
-}
-
-/* Mobile specific styles */
-@media (max-width: 800px) {
-    .mapboxgl-ctrl-geocoder {
-        width: 120px; /* 30% smaller than 225px */
-        min-width: 120px;
-    }
-
-    .mapboxgl-ctrl-geocoder--input {
-        height: 28px; /* 30% smaller than 40px */
-        font-size: 11px; /* 30% smaller than 16px */
-        padding: 7px;    /* 30% smaller than 10px */
-        padding-left: 28px; /* 30% smaller than 40px */
-    }
-
-    .mapboxgl-ctrl-geocoder--icon-search {
-        top: 6px; /* scaled proportionally */
-        left: 7px;
-        width: 16px;
-        height: 16px;
-    }
-
-    .mapboxgl-ctrl-geocoder .suggestions {
-        font-size: 10.5px;
-    }
-
-    .mapboxgl-ctrl-geocoder .suggestions>li>a {
-        padding: 4px 8px;
-    }
 }

@@ -71,7 +71,7 @@ a:active {
   width: 39vw;
   max-width: 470px;
   min-width: 180px;
-  border-radius: 4px;
+  border-radius: 0px;
   transition: background 0.3s, color 0.3s;
 }
 
@@ -106,7 +106,7 @@ a:active {
   border: none;
   cursor: pointer;
   outline: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 0px;
   white-space: nowrap;
   background: #ececec;
   transition: outline 0.2s, background 0.2s;
@@ -137,7 +137,7 @@ a:active {
   background: #222;
   color: #fff;
   border: 1px solid #888;
-  border-radius: 4px;
+  border-radius: 0px;
   padding: 8px 14px;
   cursor: pointer;
   transition: background 0.2s;
@@ -159,7 +159,7 @@ a:active {
   padding: 10px 13px;
   font-size: 0.8rem;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 0px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.23);
   max-width: 300px;
@@ -185,7 +185,7 @@ a:active {
   width: 11px;
   height: 11px;
   margin-right: 7px;
-  border-radius: 2px;
+  border-radius: 0px;
   flex-shrink: 0;
 }
 
@@ -213,7 +213,7 @@ a:active {
   font-size: 0.89rem;
   z-index: 3;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 0px;
   transition: background 0.2s, opacity 0.3s;
   font-family: inherit;
 }
@@ -247,7 +247,7 @@ a:active {
 
 .howto-content {
   background: #fff;
-  border-radius: 4px;
+  border-radius: 0px;
   max-width: 500px;
   padding: 22px 17px 14px 19px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
@@ -349,7 +349,7 @@ a:active {
     padding: 7px 6px 7px 7px;
     font-size: 0.85em;
     top: 8px;
-    border-radius: 8px;
+    border-radius: 0px;
   }
 
   .info-box h1 {
@@ -374,7 +374,7 @@ a:active {
     font-size: 0.85rem;
     padding: 6px 4px;
     min-width: 22vw;
-    border-radius: 4px;
+    border-radius: 0px;
   }
 
   .asset-toggles label {
@@ -391,11 +391,11 @@ a:active {
   .mapboxgl-ctrl-geocoder {
     top: 48px !important;
     right: 4vw !important;
-    width: 62vw !important;
+    width: 28vw !important;
     min-width: 0 !important;
     max-width: 92vw !important;
     font-size: 0.82rem !important;
-    border-radius: 7px !important;
+    border-radius: 0px !important;
     z-index: 40 !important;
   }
 
@@ -413,7 +413,7 @@ a:active {
     max-width: 97vw;
     padding: 8px 6px 8px 8px;
     font-size: 0.9em;
-    border-radius: 8px;
+    border-radius: 0px;
   }
 
   /* Legend: smaller and less padding */
@@ -423,7 +423,7 @@ a:active {
     max-width: 72vw;
     padding: 5px 5px;
     font-size: 0.72em;
-    border-radius: 7px;
+    border-radius: 0px;
   }
 
   #legend strong {
@@ -460,22 +460,23 @@ a:active {
   }
 }
 
-/* County popup information */
 
 /* County popup information */
 .mapboxgl-popup {
-  z-index: 1100 !important; /* Higher than legend and most UI elements */
+  z-index: 1100 !important;
+  /* Higher than legend and most UI elements */
 }
 
 .mapboxgl-popup-content {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.19);
+  border-radius: 0px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.19);
   border: 1.5px solid #0054ff;
   background: #fff;
   padding: 18px 14px 13px 16px;
   color: #222;
   font-size: 1.01em;
+  line-height: 1;
 }
 
 
@@ -494,3 +495,26 @@ a:active {
   color: #dd4000;
 }
 
+@media (max-width: 800px) {
+  .mapboxgl-popup-content {
+    font-size: 0.8em;
+    /* 60% of original 1.01em */
+    padding: 2px 2px 2px 2px;
+    /* 60% of 18px/14px/13px/16px */
+    max-width: 60vw !important;
+    /* Prevent overflow on small screens */
+  }
+
+  .mapboxgl-popup-close-button {
+    font-size: 0.87em;
+    /* 60% of 1.45em */
+    right: 4px !important;
+    /* Pull closer to edge if needed */
+    top: 4px !important;
+  }
+
+  .mapboxgl-popup-content table {
+    font-size: 0.85em !important;
+    /* shrink table text */
+  }
+}
