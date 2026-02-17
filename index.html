@@ -16,98 +16,93 @@
   <script
     src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
 
-  <!-- CUSTOM BLACK GEOCODER STYLE -->
-  <link rel="stylesheet" href="geocoder.css" type="text/css" />
-
-  <!-- CUSTOM GOOGLE FONT (Poppins, AOA style) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
-    rel="stylesheet">
-
-  <!-- FONT AWESOME ICONS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-
   <!-- YOUR MAIN STYLESHEET -->
   <link rel="stylesheet" href="styles.css">
 </head>
 
-
-
 <body>
   <div id="loading">Loading map...</div>
 
-  <div id="map"></div>
-
-  <div class="info-box">
-    <h1>NEW JERSEY: FLOOD RISK = FINANCIAL RISK</h1>
-    <p>
-      Flooding threatens the homes, businesses, and financial stability of communities across New Jersey. Rebuild by Design mapped flood risk for <b>3.4 million properties statewide</b> to show how flooding could impact people and places. Each property is classified into one of four groups, revealing who faces the greatest risk of costly flood damage—and who may be forced to relocate in the future.
+  <!-- ========================================
+       SIDEBAR - Left panel with controls
+       ======================================== -->
+  <div id="sidebar">
+    
+    <!-- Header & Introduction -->
+    <h1 class="sidebar-title">NEW JERSEY: FLOOD RISK = FINANCIAL RISK</h1>
+    <p class="helper-text">
+      Flooding threatens the homes, businesses, and financial stability of communities across New Jersey. Rebuild by Design mapped flood risk for <strong>3.4 million properties statewide</strong> to show how flooding could impact people and places.
     </p>
-    <p>Click a toggle below to view different displacement risk groups.</p>
-    <div class="risk-buttons">
-      <button id="toggle-risk-groups" class="toggle-all active"
-        style="background:#222; color: #fff; border: 1px solid #888;">SHOW ALL</button>
-      <div class="risk-row">
-        <button data-group="Crisis" style="background:#dd4000">CRISIS</button>
-        <button data-group="Emigrating" style="background:#f27407">EMIGRATING</button>
-      </div>
-      <div class="risk-row">
-        <button data-group="Destination" style="background:#f2a007">DESTINATION</button>
-        <button data-group="Stable" style="background:#f7c320">STABLE</button>
-      </div>
-    </div>
+    <a href="#" id="methodology-link">View methodology >></a>
+    <br /><br />
+    
 
-    <!--   FLOOD RISK TOGGLE ON AND OFF, V1 VERSION HAD PUBLIC ASSETS. CHANGED TO POPUP
-    <div class="asset-toggles">
-      <label><input type="checkbox" id="toggle-floodplain" checked> 2050 Flood Risk</label>
-</div> -->
+    <!-- Step 1: Risk Groups -->
+<h3>Step 1: Select Displacement Risk Groups</h3>
+<p class="helper-text">
+  Click to view different displacement risk groups. Each property is classified by flood exposure and financial capacity.
+</p>
 
-
-  </div>
-
-
-  <!-- LEGEND -->
-  <div id="legend">
-    <strong>Flood Risk Legend</strong>
-    <div><span class="legend-key" style="background:#dd4000"></span> CRISIS: High Flood Risk, Lower Income</div>
-    <div><span class="legend-key" style="background:#f27407"></span> EMIGRATING: High Flood Risk, Higher Income</div>
-    <div><span class="legend-key" style="background:#f2a007"></span> DESTINATION: Low Flood Risk, Lower Income</div>
-    <div><span class="legend-key" style="background:#f7c320"></span> STABLE: Low Flood Risk, Higher Income</div>
-  </div>
-
-  <!-- HOW TO USE BANNER -->
-  <div id="howto-banner" class="howto-banner" tabindex="0">
-    <span class="howto-short">ℹ️ Need Help?</span>
-    <span class="howto-long">ℹ️ Need Help?</span>
-  </div>
-
-
-<!-- HOW TO USE MODAL -->
-<div id="howto-modal" class="howto-modal hidden" tabindex="-1">
-  <div class="howto-content">
-    <button id="howto-close" aria-label="Close">&times;</button>
-    <h2>How to Use This Map</h2>
-    <ul>
-      <li><b>Toggle Displacement Risk Groups:</b> Use the buttons below the title to view properties most at risk of flooding and forced relocation.</li>
-      <li><b>Search for an Address:</b> Use the search bar (top right) to zoom directly to any property in New Jersey.</li>
-      <li><b>Click on a County:</b> Select any county to learn more about local flood risk and critical infrastructure at risk.</li>
-      <li><b>Legend:</b> Use the color key (bottom right) to understand risk group types.</li>
-      <li><b>Zoom In:</b> Get more detail by zooming in. Some features appear only at higher zoom levels.</li>
-    </ul>
-    <p style="font-size:0.97em;color:#888;">For more details on data sources and methodology, visit the <a
-        href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" rel="noopener">NJ Flood Risk = Financial
-        Risk</a> report by Rebuild by Design.</p>
-  </div>
+<div class="risk-buttons">
+  <button data-group="Crisis" style="background:#dd4000">CRISIS: High Flood Risk, Lower Income</button>
+  <button data-group="Emigrating" style="background:#f27407">EMIGRATING: High Flood Risk, Higher Income</button>
+  <button data-group="Destination" style="background:#f2a007">DESTINATION: Low Flood Risk, Lower Income</button>
+  <button data-group="Stable" style="background:#f7c320">STABLE: Low Flood Risk, Higher Income</button>
 </div>
 
 
 
+    <!-- Step 2: Search -->
+    <h3>Step 2: Search for an Address</h3>
+    <p class="helper-text">
+      Use the search bar above the map (top right) to zoom to any property in New Jersey.
+    </p>
+
+    <!-- Step 3: County Information -->
+    <h3>Step 3: Explore County Data</h3>
+    <p class="helper-text">
+      Click any county on the map to view flood risk statistics and critical infrastructure exposure.
+    </p>
+    
+    <!-- County Data Display (populated dynamically) -->
+    <div id="county-data" class="county-display">
+      <p class="county-prompt">← Select a county to view data</p>
+    </div>
+
+
+  </div>
+  <!-- End Sidebar -->
+
+  <!-- ========================================
+       MAP CONTAINER - Mapbox GL renders here
+       ======================================== -->
+  <div id="map"></div>
+
+  <!-- HOW TO USE BANNER -->
+  <div id="howto-banner" class="howto-banner" tabindex="0">
+    <span class="howto-short">ℹ️ Help</span>
+    <span class="howto-long">ℹ️ Need Help?</span>
+  </div>
+
+  <!-- HOW TO USE MODAL -->
+  <div id="howto-modal" class="howto-modal hidden" tabindex="-1">
+    <div class="howto-content">
+      <button id="howto-close" aria-label="Close">&times;</button>
+      <h2>How to Use This Map</h2>
+      <ul>
+        <li><strong>Toggle Displacement Risk Groups:</strong> Use the sidebar buttons to view properties most at risk of flooding and forced relocation.</li>
+        <li><strong>Search for an Address:</strong> Use the search bar (top right) to zoom directly to any property in New Jersey.</li>
+        <li><strong>Click on a County:</strong> Select any county to view local flood risk and critical infrastructure data in the sidebar.</li>
+        <li><strong>Legend:</strong> Use the color key in the sidebar to understand risk group types.</li>
+        <li><strong>Zoom In:</strong> Get more detail by zooming in. Some features appear only at higher zoom levels.</li>
+      </ul>
+      <p style="font-size:0.97em;color:#888;">For more details on data sources and methodology, visit the <a
+          href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" rel="noopener">NJ Flood Risk = Financial
+          Risk</a> report by Rebuild by Design.</p>
+    </div>
+  </div>
+
   <!-- JS scripts -->
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <script
-    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1/mapbox-gl-geocoder.min.js"></script>
   <script src="scripts.js"></script>
 </body>
 

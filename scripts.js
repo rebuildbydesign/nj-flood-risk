@@ -10,28 +10,27 @@ const riskColors = {
 };
 
 // --- Dynamic zoom/center for mobile ---
-let mapCenter = [-75.32569, 40.15205];
+let mapCenter = [-74.6, 40.15205];
 let mapZoom = 7.75;
 
 // Adjust for mobile
 if (window.innerWidth <= 600) {
-    mapCenter = [-74.8, 39.9];
+    mapCenter = [-74.3, 39.9];
     mapZoom = 6.65;
 }
 
-// --- Initialize Mapbox Map ---
+// --- Initialize Mapbox Map with LIGHT basemap ---
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/j00by/cmbqvtons000201qlgcox1gi5',
+    style: 'mapbox://styles/j00by/cmbqvtons000201qlgcox1gi5', // LIGHT BASEMAP
     center: mapCenter,
     zoom: mapZoom,
-    minZoom: 6.5,   // Allow zoom out on mobile if needed
+    minZoom: 6.5,
     maxBounds: [
         [-78.27621, 38.89837],
         [-72.85168, 41.38302]
     ]
 });
-
 
 // --- Displacement Risk Group Layers ---
 window.parcelLayers = [
@@ -41,8 +40,7 @@ window.parcelLayers = [
     { id: 'destination', tileset: 'j00by.2pl97lme', color: '#f2a007' }
 ];
 
-// --- County Popup Information (Upgraded) ---
-
+// --- Helper Functions ---
 function formatNumber(num) {
     num = Number(num);
     if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
@@ -53,498 +51,513 @@ function formatNumber(num) {
     return num;
 }
 
-function percentBar(n, d, p) {
-    if (!d || isNaN(n) || isNaN(d) || d === 0 || isNaN(p)) {
-        return `
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
-            <div style="background:#0054ff;width:0%;height:100%;"></div>
-          </div>
-          <span style="width:38px;text-align:right;color:#aaa;font-weight:600;">–</span>
+// --- V2 POPUP HTML FUNCTION ---
+function countyPopupHTML(props) {
+    // Displacement parcels bar
+    const riskBar = `
+        <div style="display:flex;height:18px;border-radius:2px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
+            <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
+            <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
+            <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
         </div>
+    `;
+
+    // Build array of assets with risk
+    const assets = [
+        {
+            label: '✈️ Airports',
+            total: props.TOTAL_AIRPORTS,
+            count2025: props.AIRPORTS_2025,
+            pct2025: props.PCT_AIRPORTS_2025,
+            count2050: props.AIRPORTS_2050,
+            pct2050: props.PCT_AIRPORTS_2050
+        },
+        {
+            label: '🏥 Hospitals',
+            total: props.TOTAL_HOSPITALS,
+            count2025: props.HOSPITALS_2025,
+            pct2025: props.PCT_HOSPITALS_2025,
+            count2050: props.HOSPITAL_2050,
+            pct2050: props.PCT_HOSPITALS_2050
+        },
+        {
+            label: '📚 Libraries',
+            total: props.TOTAL_LIBRARY,
+            count2025: props.LIBRARY_2025,
+            pct2025: props.PCT_LIBRARY_2025,
+            count2050: props.LIBRARY_2050,
+            pct2050: props.PCT_LIBRARY_2050
+        },
+        {
+            label: '🌳 Parks',
+            total: props.TOTAL_PARKS,
+            count2025: props.PARKS_2025,
+            pct2025: props.PCT_PARKS_2025,
+            count2050: props.PARKS_2050,
+            pct2050: props.PCT_PARKS_2050
+        },
+        {
+            label: '⚡ Power Plants',
+            total: props.TOTAL_POWERPLANTS,
+            count2025: props.POWERPLANTS_2025,
+            pct2025: props.PCT_POWERPLANTS_2025,
+            count2050: props.POWERPLANTS_2050,
+            pct2050: props.PCT_POWERPLANTS_2050
+        },
+        {
+            label: '🏫 Schools',
+            total: props.TOTAL_SCHOOL,
+            count2025: props.SCHOOL_2025,
+            pct2025: props.PCT_SCHOOL_2025,
+            count2050: props.SCHOOL_2050,
+            pct2050: props.PCT_SCHOOL_2050
+        },
+        {
+            label: '⚠️ Contaminated Sites',
+            total: props.TOTAL_KNOWN_CONTAMINATED_SITE,
+            count2025: props.KNOWN_CONTAMINATED_SITE_2025,
+            pct2025: props.PCT_KNOWN_CONTAMINATED_SITE_2025,
+            count2050: props.KNOWN_CONTAMINATED_SITE_2050,
+            pct2050: props.PCT_KNOWN_CONTAMINATED_SITE_2050
+        },
+        {
+            label: '☢️ Solid/Hazardous Waste',
+            total: props.TOTAL_SOLID_HAZARD_WASTE,
+            count2025: props.SOLID_HAZARD_WASTE_2025,
+            pct2025: props.PCT_SOLID_HAZARD_WASTE_2025,
+            count2050: props.SOLID_HAZARD_WASTE_2050,
+            pct2050: props.PCT_SOLID_HAZARD_WASTE_2050
+        },
+        {
+            label: '🗑️ Landfills',
+            total: props.TOTAL_SOLID_WASTE_LANDFILL,
+            count2025: props.SOLID_WASTE_LANDFILL_2025,
+            pct2025: props.PCT_SOLID_WASTE_LANDFILL_2025,
+            count2050: props.SOLID_WASTE_LANDFILL_2050,
+            pct2050: props.PCT_SOLID_WASTE_LANDFILL_2050
+        },
+        {
+            label: '☣️ Superfund Sites',
+            total: props.TOTAL_SUPERFUND,
+            count2025: props.SUPERFUND_2025,
+            pct2025: props.PCT_SUPERFUND_2025,
+            count2050: props.SUPERFUND_2050,
+            pct2050: props.PCT_SUPERFUND_2050
+        },
+        {
+            label: '💧 Wastewater Treatment',
+            total: props.TOTAL_WASTEWATER_TREATMENT,
+            count2025: props.WASTEWATER_TREATMENT_2025,
+            pct2025: props.PCT_WASTEWATER_TREATMENT_2025,
+            count2050: props.WASTEWATER_TREATMENT_2050,
+            pct2050: props.PCT_WASTEWATER_TREATMENT_2050
+        }
+    ];
+
+    // Filter to only show assets with risk
+    const assetsAtRisk = assets.filter(asset => {
+        const hasTotal = asset.total && Number(asset.total) > 0;
+        const has2025Risk = asset.count2025 && Number(asset.count2025) > 0;
+        const has2050Risk = asset.count2050 && Number(asset.count2050) > 0;
+        return hasTotal && (has2025Risk || has2050Risk);
+    });
+
+    // Calculate summary metric
+    const totalAssets = assets.reduce((sum, a) => sum + (Number(a.total) || 0), 0);
+    const assetsAtRisk2050 = assets.reduce((sum, a) => sum + (Number(a.count2050) || 0), 0);
+    const summaryPct = totalAssets > 0 ? ((assetsAtRisk2050 / totalAssets) * 100).toFixed(1) : 0;
+
+    // Helper function for compact asset bars (two-column layout)
+    function compactAssetBar(label, count2025, pct2025, count2050, pct2050, total) {
+        let p2025 = Number(pct2025) || 0;
+        let p2050 = Number(pct2050) || 0;
+        p2025 = Math.max(0, Math.min(p2025, 100));
+        p2050 = Math.max(0, Math.min(p2050, 100));
+        
+        // Light theme colors with good contrast
+        let color2025 = p2025 < 20 ? '#10b981' : p2025 < 50 ? '#f59e0b' : '#ef4444';
+        let color2050 = p2050 < 20 ? '#10b981' : p2050 < 50 ? '#f59e0b' : '#ef4444';
+        
+        return `
+            <div style="margin-bottom:10px;padding:10px;background:#f9fafb;border-radius:4px;border:1px solid #e5e7eb;">
+                <div style="font-size:0.9em;font-weight:600;margin-bottom:6px;color:#111827;">${label}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+                    <span style="width:38px;font-size:0.78em;color:#6b7280;font-weight:500;">2025:</span>
+                    <div style="flex:1;background:#e5e7eb;height:10px;border-radius:2px;overflow:hidden;">
+                        <div style="background:${color2025};width:${p2025}%;height:100%;transition:width 0.3s;"></div>
+                    </div>
+                    <span style="width:95px;text-align:right;font-size:0.82em;color:#374151;font-weight:500;">
+                        ${count2025 || 0}/${total} <span style="color:#6b7280;">(${p2025.toFixed(1)}%)</span>
+                    </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="width:38px;font-size:0.78em;color:#6b7280;font-weight:500;">2050:</span>
+                    <div style="flex:1;background:#e5e7eb;height:10px;border-radius:2px;overflow:hidden;">
+                        <div style="background:${color2050};width:${p2050}%;height:100%;transition:width 0.3s;"></div>
+                    </div>
+                    <span style="width:95px;text-align:right;font-size:0.82em;color:#374151;font-weight:500;">
+                        ${count2050 || 0}/${total} <span style="color:#6b7280;">(${p2050.toFixed(1)}%)</span>
+                    </span>
+                </div>
+            </div>
         `;
     }
-    let pct = Math.max(0, Math.min(Number(p) * 100, 100)).toFixed(0);
-    return `
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div style="flex:1;background:#e9ecef;height:14px;border-radius:0px;overflow:hidden;margin-right:6px;">
-          <div style="background:#0054ff;width:${pct}%;height:100%;"></div>
-        </div>
-        <span style="width:38px;text-align:right;color:#0054ff;font-weight:600;">${pct}%</span>
-      </div>
-    `;
-}
 
+    // Split assets into two columns
+    const midpoint = Math.ceil(assetsAtRisk.length / 2);
+    const leftColumn = assetsAtRisk.slice(0, midpoint);
+    const rightColumn = assetsAtRisk.slice(midpoint);
 
-function countyPopupHTML(props) {
-    const riskColors = {
-        Crisis: '#dd4000',
-        Emigrating: '#f27407',
-        Destination: '#f2a007',
-        Stable: '#f7c320'
-    };
+    let leftColumnHTML = leftColumn.map(asset => 
+        compactAssetBar(
+            asset.label,
+            asset.count2025,
+            asset.pct2025,
+            asset.count2050,
+            asset.pct2050,
+            asset.total
+        )
+    ).join('');
 
-    // Displacement parcels bar - square edges, consistent height
-const riskBar = `
-  <div style="display:flex;height:16px;border-radius:0px;overflow:hidden;margin-bottom:8px;margin-top:2px;">
-    <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
-    <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
-    <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
-    <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
-  </div>`;
+    let rightColumnHTML = rightColumn.map(asset => 
+        compactAssetBar(
+            asset.label,
+            asset.count2025,
+            asset.pct2025,
+            asset.count2050,
+            asset.pct2050,
+            asset.total
+        )
+    ).join('');
 
-
-    // Asset row with improved NaN/undefined handling and blue percent bar
-    function assetRow(label, atRisk, total, pct) {
-        let n = Number(atRisk), d = Number(total), p = Number(pct);
-        // Handle nulls and missing
-        let atRiskText = (!isNaN(n) && !isNaN(d)) ? `${n}/${d}` : (isNaN(n) && !isNaN(d)) ? `0/${d}` : "–";
-        return `
-        <tr>
-            <td>${label}</td>
-            <td style="text-align:right;padding-right:8px;">${atRiskText}</td>
-            <td>${percentBar(n, d, p)}</td>
-        </tr>`;
-    }
-
-    // Total parcels row for clarity
     let totalParcels = formatNumber(props.TOTAL_PARCELS);
 
     return `
-    <div style="font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;max-width:410px;">
-      <div style="border-left:6px solid #0054ff;padding-left:12px;margin-bottom:8px;">
-        <div style="font-weight:700;font-size:1.5em;">${props.COUNTY} COUNTY</div>
-        <div style="font-size:1.01em;color:#111;margin-top:2px;">
-          <b>${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</b> of parcels (<b>$${formatNumber(props.MARKET_VALUE_RISK_2024)}</b> value) are at high flood risk now.<br>
-          <span style="color:#0054ff;font-weight:600;">
-            By 2050: ${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}% ($${formatNumber(props.MARKET_VALUE_RISK_2050)} at risk)
-          </span>
+        <div style="display:flex;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;width:720px;max-width:90vw;background:#fff;">
+            
+            <!-- NARROW DISPLACEMENT SIDEBAR (Left) -->
+            <div style="background:#f3f4f6;color:#111827;width:230px;padding:18px 16px;display:flex;flex-direction:column;border-right:2px solid #e5e7eb;">
+                <!-- County Header -->
+                <div style="border-left:4px solid #0054ff;padding-left:10px;margin-bottom:16px;">
+                    <div style="font-weight:700;font-size:1.25em;color:#111827;line-height:1.2;margin-bottom:10px;">
+                        ${props.COUNTY} COUNTY
+                    </div>
+                    <div style="font-size:0.9em;color:#111827;line-height:1.45;margin-bottom:6px;">
+                        <span style="font-weight:600;color:#dc2626;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> of parcels 
+                        (<span style="font-weight:600;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</span> value) are at high flood risk now.
+                    </div>
+                    <div style="font-size:0.9em;color:#0054ff;font-weight:600;line-height:1.4;">
+                        By 2050: ${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}% ($${formatNumber(props.MARKET_VALUE_RISK_2050)} at risk)
+                    </div>
+                </div>
+
+                <!-- Displacement Risk Section -->
+                <div style="flex:1;">
+                    <div style="font-weight:600;font-size:0.95em;margin-bottom:6px;color:#111827;">
+                        🏠 Displacement Risk & Migration (Parcel-Level)
+                    </div>
+                    <div style="font-size:0.85em;color:#6b7280;margin-bottom:8px;">
+                        Total parcels: ${totalParcels}
+                    </div>
+                    ${riskBar}
+                    
+                    <!-- Risk Categories in Table Format -->
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr style="border-bottom:1px solid #e5e7eb;">
+                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
+                                <span style="color:${riskColors.Crisis};font-size:1.1em;line-height:1;">⬤</span>
+                                <span style="color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">Crisis</span>
+                            </td>
+                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                                ${formatNumber(props.CRISIS_PARCELS)}
+                            </td>
+                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">
+                                ${(props.CRISIS_PARCELS_PCT * 100).toFixed(1)}%
+                            </td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #e5e7eb;">
+                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
+                                <span style="color:${riskColors.Emigrating};font-size:1.1em;line-height:1;">⬤</span>
+                                <span style="color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">Emigrating</span>
+                            </td>
+                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                                ${formatNumber(props.EMIGRATING_PARCELS)}
+                            </td>
+                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">
+                                ${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(1)}%
+                            </td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #e5e7eb;">
+                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
+                                <span style="color:${riskColors.Destination};font-size:1.1em;line-height:1;">⬤</span>
+                                <span style="color:${riskColors.Destination};font-weight:600;font-size:0.9em;">Destination</span>
+                            </td>
+                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                                ${formatNumber(props.DESTINATION_PARCELS)}
+                            </td>
+                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">
+                                ${(props.DESTINATION_PARCELS_PCT * 100).toFixed(1)}%
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
+                                <span style="color:${riskColors.Stable};font-size:1.1em;line-height:1;">⬤</span>
+                                <span style="color:${riskColors.Stable};font-weight:600;font-size:0.9em;">Stable</span>
+                            </td>
+                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                                ${formatNumber(props.STABLE_PARCELS)}
+                            </td>
+                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">
+                                ${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- CTA Link -->
+                <div style="margin-top:auto;padding-top:14px;border-top:2px solid #d1d5db;">
+                    <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" 
+                       style="font-weight:600;color:#dd4000;text-decoration:none;font-size:0.88em;display:inline-flex;align-items:center;gap:4px;">
+                        📋 Explore Full Strategy →
+                    </a>
+                </div>
+            </div>
+
+            <!-- WIDE INFRASTRUCTURE PANEL (Right) -->
+            <div style="background:#ffffff;flex:1;padding:18px 20px;overflow-y:auto;max-height:500px;">
+                <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e5e7eb;">
+                    <div style="font-weight:700;font-size:1.08em;color:#111827;letter-spacing:0.01em;margin-bottom:6px;">
+                        🛡️ Critical Facilities in Flood-Prone Areas
+                    </div>
+                    <div style="font-size:0.9em;color:#374151;line-height:1.4;">
+                        By 2050: <span style="color:#dc2626;font-weight:600;">${summaryPct}%</span> of all public assets at risk
+                        <span style="color:#6b7280;"> (${assetsAtRisk2050}/${totalAssets} total)</span>
+                    </div>
+                </div>
+                
+                ${assetsAtRisk.length > 0 ? `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div>${leftColumnHTML}</div>
+                        <div>${rightColumnHTML}</div>
+                    </div>
+                    <div style="font-size:0.78em;color:#6b7280;line-height:1.3;margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;">
+                        * Assets on 2050 floodplain or within 100ft to capture full impact on adjacent areas
+                    </div>
+                ` : '<div style="font-size:0.9em;color:#6b7280;font-style:italic;">No critical infrastructure at risk</div>'}
+            </div>
         </div>
-      </div>
-      <div style="margin-bottom:7px;">
-        <div style="font-weight:600;margin-bottom:2px;letter-spacing:0.01em;">🏠 Displacement Risk & Migration (Parcel-Level)
-        </div>
-        
-        <div style="font-size:0.97em;color:#000;margin-bottom:4px;font-weight:500;">
-          Total parcels: ${totalParcels}
-        </div>
-        ${riskBar}
-        <table style="width:100%;font-size:0.99em;">
-          <tr style="color:${riskColors.Crisis}"><td>⬤ Crisis</td><td style="text-align:right;">${formatNumber(props.CRISIS_PARCELS)}</td><td style="text-align:right;">${(props.CRISIS_PARCELS_PCT * 100).toFixed(1)}%</td></tr>
-          <tr style="color:${riskColors.Emigrating}"><td>⬤ Emigrating</td><td style="text-align:right;">${formatNumber(props.EMIGRATING_PARCELS)}</td><td style="text-align:right;">${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(1)}%</td></tr>
-          <tr style="color:${riskColors.Destination}"><td>⬤ Destination</td><td style="text-align:right;">${formatNumber(props.DESTINATION_PARCELS)}</td><td style="text-align:right;">${(props.DESTINATION_PARCELS_PCT * 100).toFixed(1)}%</td></tr>
-          <tr style="color:${riskColors.Stable}"><td>⬤ Stable</td><td style="text-align:right;">${formatNumber(props.STABLE_PARCELS)}</td><td style="text-align:right;">${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%</td></tr>
-        </table>
-      </div>
-      <div style="font-weight:600;margin-bottom:3px;letter-spacing:0.01em;">🛡️ Critical Facilities in Flood-Prone Areas</div>
-      <table style="width:100%;font-size:0.99em;margin-bottom:2px;">
-        ${assetRow('Airports', props.AIRPORTS_AT_RISK, props.TOTAL_AIRPORTS, props.PERC_AIRPORTS_AT_RISK)}
-        ${assetRow('Hospitals', props.HOSPITALS_AT_RISK, props.TOTAL_HOSPITALS, props.PERC_HOSPITALS_AT_RISK)}
-        ${assetRow('Libraries', props.LIBRARIES_AT_RISK, props.TOTAL_LIBRARIES, props.PERC_LIBRARIES_AT_RISK)}
-        ${assetRow('Parks', props.PARKS_AT_RISK, props.TOTAL_PARKS, props.PERC_PARKS_AT_RISK)}
-        ${assetRow('Power Plants', props.PLANTS_AT_RISK, props.TOTAL_PLANTS, props.PERC_PLANTS_AT_RISK)}
-        ${assetRow('Schools', props.SCHOOLS_AT_RISK, props.TOTAL_SCHOOLS, props.PERC_SCHOOLS_AT_RISK)}
-        ${assetRow('Superfunds', props.SUPER_FUND_AT_RISK, props.TOTAL_SUPER_FUND, props.PERC_SUPER_FUND_AT_RISK)}
-      </table>
-      <div style="font-size:0.92em;color:#888;line-height:1.08;margin-bottom:6px;">
-  * <i>Includes assets on the 2050 floodplain or within 100ft to better capture the full impact of flooding on adjacent neighbors and blocks.</i>
-</div>
-      <div class="cta" style="margin-top:5px;">
-        <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" style="font-weight:700;color:#dd4000;text-decoration:underline;">Explore Rebuild by Design’s Strategy for a Safer New Jersey</a>
-      </div>
-    </div>
     `;
 }
 
-
-
+// --- Map Load Event ---
 map.on('load', () => {
-    // 1. Add parcel layers
+    // Hide loading indicator
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.style.display = 'none';
+
+    // 1. Add parcel layers (displacement risk groups)
     parcelLayers.forEach(layer => {
-        map.addSource(layer.id, { type: 'vector', url: `mapbox://${layer.tileset}` });
+        map.addSource(layer.id, { 
+            type: 'vector', 
+            url: `mapbox://${layer.tileset}` 
+        });
+        
         map.addLayer({
             id: `${layer.id}-fill`,
             type: 'fill',
             source: layer.id,
             'source-layer': 'parcels',
             minzoom: 7.5,
-            paint: { 'fill-color': layer.color, 'fill-opacity': 0.9 }
+            paint: { 
+                'fill-color': layer.color, 
+                'fill-opacity': 0.9 
+            }
         });
+        
         map.addLayer({
             id: `${layer.id}-outline`,
             type: 'line',
             source: layer.id,
             'source-layer': 'parcels',
             minzoom: 7.5,
-            paint: { 'line-color': '#333', 'line-width': 0.2 }
-        });
-    });
-
-    // 2. FEMA Floodplain Layer (Toggle)
-    const toggle = document.getElementById('toggle-floodplain');
-    if (toggle) {
-        toggle.checked = false;
-        toggle.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                if (!map.getSource('fema_rutgers')) {
-                    map.addSource('fema_rutgers', { type: 'vector', url: 'mapbox://j00by.77lcuflb' });
-                    map.addLayer({
-                        id: 'fema_rutgers-fill',
-                        type: 'fill',
-                        source: 'fema_rutgers',
-                        'source-layer': 'floodplain',
-                        paint: {
-                            'fill-color': '#0054ff',
-                            'fill-opacity': 0.8,
-                            'fill-antialias': true
-                        }
-                    });
-                } else {
-                    map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'visible');
-                    map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'visible');
-                }
-            } else {
-                if (map.getLayer('fema_rutgers-fill')) map.setLayoutProperty('fema_rutgers-fill', 'visibility', 'none');
-                if (map.getLayer('fema_rutgers-outline')) map.setLayoutProperty('fema_rutgers-outline', 'visibility', 'none');
-            }
-        });
-    }
-
-    // 3. Hospitals (toggle)
-    map.addSource('hospitals', { type: 'geojson', data: '/data/hospitals.geojson' });
-    map.loadImage('/img/hospitals.png', (error, image) => {
-        if (error) throw error;
-        if (!map.hasImage('hospital-icon')) {
-            map.addImage('hospital-icon', image, { sdf: false });
-        }
-        map.addLayer({
-            id: 'hospitals-symbol',
-            type: 'symbol',
-            source: 'hospitals',
-            layout: {
-                'icon-image': 'hospital-icon',
-                'icon-allow-overlap': true,
-                'icon-size': [
-                    'interpolate', ['linear'], ['zoom'],
-                    7, 0.18, 9, 0.26, 11, 0.42, 13, 0.65, 15, 1.0
-                ],
-                'visibility': 'none'
+            paint: { 
+                'line-color': '#333', 
+                'line-width': 0.2 
             }
         });
     });
 
-    // 4. Schools (toggle)
-    map.addSource('schools', { type: 'geojson', data: '/data/schools.geojson' });
-    map.loadImage('/img/schools.png', (error, image) => {
-        if (error) throw error;
-        if (!map.hasImage('schools-icon')) {
-            map.addImage('schools-icon', image, { sdf: false });
-        }
-        map.addLayer({
-            id: 'schools-symbol',
-            type: 'symbol',
-            source: 'schools',
-            layout: {
-                'icon-image': 'schools-icon',
-                'icon-allow-overlap': true,
-                'icon-size': [
-                    'interpolate', ['linear'], ['zoom'],
-                    7, 0.16, 9, 0.22, 11, 0.32, 13, 0.50, 15, 0.8
-                ],
-                'visibility': 'none'
-            }
-        });
+    // 2. Add NJ county outlines (visual boundaries)
+    map.addSource('nj_counties', { 
+        type: 'vector', 
+        url: 'mapbox://j00by.d08646su' 
     });
-
-
-    // 5. Parks (toggle)
-    map.addSource('parks', { type: 'geojson', data: '/data/parks.geojson' });
-    map.loadImage('/img/parks.png', (error, image) => {
-        if (error) throw error;
-        if (!map.hasImage('parks-icon')) {
-            map.addImage('parks-icon', image, { sdf: false });
-        }
-        map.addLayer({
-            id: 'parks-symbol',
-            type: 'symbol',
-            source: 'parks',
-            layout: {
-                'icon-image': 'parks-icon',
-                'icon-allow-overlap': true,
-                'icon-size': [
-                    'interpolate', ['linear'], ['zoom'],
-                    7, 0.16, 9, 0.22, 11, 0.32, 13, 0.50, 15, 0.8
-                ],
-                'visibility': 'none'
-            }
-        });
-    });
-
-    // 6. County Outlines (White)
-    map.addSource('nj_counties', { type: 'vector', url: 'mapbox://j00by.d08646su' });
+    
     map.addLayer({
         id: 'nj_counties-outline',
         type: 'line',
         source: 'nj_counties',
         'source-layer': 'county_boundaries',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': '#fff', 'line-width': 1 }
+        layout: { 
+            'line-join': 'round', 
+            'line-cap': 'round' 
+        },
+        paint: { 
+            'line-color': '#ffffff',
+            'line-width': 1.5
+        }
     });
 
-    // Load your county geojson (update path if needed)
-    fetch('data/county_popup.json')
-        .then(response => response.json())
+    // 3. Load county GeoJSON with popup data
+    fetch('data/county_popup.geojson')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to load county data: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(geojson => {
-            map.addSource('counties', { type: 'geojson', data: geojson });
+            map.addSource('counties', { 
+                type: 'geojson', 
+                data: geojson 
+            });
+            
             map.addLayer({
                 id: 'county-fills',
                 type: 'fill',
                 source: 'counties',
-                paint: { 'fill-color': '#0054ff', 'fill-opacity': 0.03 }
-            });
-            map.addLayer({
-                id: 'county-borders',
-                type: 'line',
-                source: 'counties',
-                paint: { 'line-color': '#fff', 'line-width': 1.2 }
+                paint: { 
+                    'fill-color': 'transparent',
+                    'fill-opacity': 0 
+                }
             });
 
-            // Popup on click
+            // Popup on click (V2 style)
             map.on('click', 'county-fills', (e) => {
                 const feature = e.features[0];
-                new mapboxgl.Popup({ closeButton: true, maxWidth: "425px" })
+                new mapboxgl.Popup({ closeButton: true, maxWidth: "800px" })
                     .setLngLat(e.lngLat)
                     .setHTML(countyPopupHTML(feature.properties))
                     .addTo(map);
             });
 
-            // Change cursor to pointer
+            // Hover effect for counties
             map.on('mouseenter', 'county-fills', () => {
                 map.getCanvas().style.cursor = 'pointer';
             });
+            
             map.on('mouseleave', 'county-fills', () => {
                 map.getCanvas().style.cursor = '';
             });
+        })
+        .catch(error => {
+            console.error('Error loading county data:', error);
+            console.warn('Make sure data/county_popup.geojson exists in your project folder');
         });
 
-
-    // 6. Show all risk groups on launch
-    setActiveGroup('ShowAll');
-
-
-    let riskGroupsVisible = true; // Start with risk groups visible
-
-    const toggleAllBtn = document.getElementById('toggle-risk-groups');
-    if (toggleAllBtn) {
-        // Set to "SHOW ALL" with active state on load
-        toggleAllBtn.textContent = 'SHOW ALL';
-        toggleAllBtn.classList.add('active');
-
-        toggleAllBtn.addEventListener('click', function () {
-            riskGroupsVisible = !riskGroupsVisible;
-            if (riskGroupsVisible) {
-                setActiveGroup('ShowAll');
-                this.textContent = 'SHOW ALL';
-                this.classList.add('active');
-            } else {
-                parcelLayers.forEach(layer => {
-                    const layerId = `${layer.id}-fill`;
-                    if (map.getLayer(layerId)) {
-                        map.setLayoutProperty(layerId, 'visibility', 'none');
-                    }
-                });
-                this.textContent = 'HIDE ALL';
-                this.classList.add('active');
-            }
-        });
-    }
-
-    document.querySelectorAll('.risk-buttons button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const group = btn.dataset.group;
-            setActiveGroup(group);
-            document.querySelectorAll('.risk-buttons button')
-                .forEach(b => b.classList.remove('active'));
+    // 4. Show only Crisis and Emigrating on launch (Primary Displacement)
+    const riskGroupBtns = document.querySelectorAll('[data-group]');
+    
+    // Activate only Crisis and Emigrating buttons
+    parcelLayers.forEach(layer => {
+        const fillId = `${layer.id}-fill`;
+        const outlineId = `${layer.id}-outline`;
+        
+        if (layer.id === 'crisis' || layer.id === 'emigrating') {
+            // Show Crisis and Emigrating
+            if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', 'visible');
+            if (map.getLayer(outlineId)) map.setLayoutProperty(outlineId, 'visibility', 'visible');
+        } else {
+            // Hide Destination and Stable
+            if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', 'none');
+            if (map.getLayer(outlineId)) map.setLayoutProperty(outlineId, 'visibility', 'none');
+        }
+    });
+    
+    // Add active class to Crisis and Emigrating buttons only
+    riskGroupBtns.forEach(btn => {
+        const group = btn.getAttribute('data-group');
+        if (group === 'Crisis' || group === 'Emigrating') {
             btn.classList.add('active');
-            // Reset toggle button
-            if (toggleAllBtn) {
-                riskGroupsVisible = true;
-                toggleAllBtn.textContent = 'SHOW ALL';
-                toggleAllBtn.classList.add('active');
+        }
+    });
+    
+    // Individual risk group buttons
+    riskGroupBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const group = btn.getAttribute('data-group');
+            const isActive = btn.classList.contains('active');
+
+            if (isActive) {
+                // Deactivate this group
+                btn.classList.remove('active');
+                const layerId = group.toLowerCase();
+                if (map.getLayer(`${layerId}-fill`)) map.setLayoutProperty(`${layerId}-fill`, 'visibility', 'none');
+                if (map.getLayer(`${layerId}-outline`)) map.setLayoutProperty(`${layerId}-outline`, 'visibility', 'none');
+            } else {
+                // Activate this group
+                btn.classList.add('active');
+                const layerId = group.toLowerCase();
+                if (map.getLayer(`${layerId}-fill`)) map.setLayoutProperty(`${layerId}-fill`, 'visibility', 'visible');
+                if (map.getLayer(`${layerId}-outline`)) map.setLayoutProperty(`${layerId}-outline`, 'visibility', 'visible');
             }
         });
     });
 
-
-
-
-    // 7. Mapbox Geocoder (Address Search)
+    // 5. Add geocoder (search)
     const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
-        marker: false,
-        placeholder: 'Search Address Here',
-        flyTo: { zoom: 13, bearing: 0, speed: 1.2, curve: 1, easing: t => t }
-    });
-    const geocoderContainer = document.createElement('div');
-    geocoderContainer.id = 'custom-geocoder';
-    geocoderContainer.style.position = 'absolute';
-    geocoderContainer.style.right = '10px';
-    geocoderContainer.style.zIndex = '999';
-
-    // Responsive top positioning
-    if (window.innerWidth <= 800) {
-    geocoderContainer.style.top = '15px';   // mobile/tablet, raised a bit
-    geocoderContainer.style.right = '5px'; // leaves room for Need Help? (adjust if needed)
-    geocoderContainer.style.width = '30vw';
-    geocoderContainer.style.maxWidth = '30vw';
-} else {
-    geocoderContainer.style.top = '35px';   // desktop
-    geocoderContainer.style.right = '5px';
-    geocoderContainer.style.width = '120px';
-    geocoderContainer.style.maxWidth = '120px';
-}
-
-
-    document.body.appendChild(geocoderContainer);
-    geocoderContainer.appendChild(geocoder.onAdd(map));
-
-    let searchMarker = null;
-    geocoder.on('result', (e) => {
-        if (searchMarker) searchMarker.remove();
-
-        // Use a large, high-contrast SVG marker
-        const el = document.createElement('div');
-        el.innerHTML = `
-        <svg width="38" height="48" viewBox="0 0 38 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="19" cy="19" rx="14" ry="14" fill="#000" stroke="#ff00f6" stroke-width="4"/>
-            <ellipse cx="19" cy="19" rx="8" ry="8" fill="#fff"/>
-            <path d="M19 47C23.5 37.5 33 27 19 27C5 27 14.5 37.5 19 47Z" fill="#ff00f6" stroke="#000" stroke-width="2"/>
-        </svg>
-    `;
-        el.style.width = '38px';
-        el.style.height = '48px';
-        el.style.display = 'block';
-        el.style.zIndex = '2000';
-        searchMarker = new mapboxgl.Marker(el).setLngLat(e.result.center).addTo(map);
-    });
-
-    // Optional: adjust on window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth <= 800) {
-            geocoderContainer.style.top = '5px';
-        } else {
-            geocoderContainer.style.top = '35px';
+        marker: {
+            color: '#dd4000' // Use crisis red for marker
+        },
+        countries: 'us',
+        bbox: [-75.559614, 38.928519, -73.893979, 41.357423],
+        placeholder: 'Search NJ addresses...',
+        flyTo: { 
+            zoom: 15, 
+            bearing: 0, 
+            speed: 1.2, 
+            curve: 1
         }
     });
 
-
-
-
-    // --- 8. Toggles for Hospitals and Schools ---
-    const hospitalToggle = document.getElementById('toggle-hospitals');
-    if (hospitalToggle) {
-        hospitalToggle.checked = false;
-        hospitalToggle.addEventListener('change', function (e) {
-            if (map.getLayer('hospitals-symbol')) {
-                map.setLayoutProperty('hospitals-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
-            }
-        });
-    }
-    const schoolToggle = document.getElementById('toggle-schools');
-    if (schoolToggle) {
-        schoolToggle.checked = false;
-        schoolToggle.addEventListener('change', function (e) {
-            if (map.getLayer('schools-symbol')) {
-                map.setLayoutProperty('schools-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
-            }
-        });
-    }
-
-    const parksToggle = document.getElementById('toggle-parks');
-    if (parksToggle) {
-        parksToggle.checked = false;
-        parksToggle.addEventListener('change', function (e) {
-            if (map.getLayer('parks-symbol')) {
-                map.setLayoutProperty('parks-symbol', 'visibility', e.target.checked ? 'visible' : 'none');
-            }
-        });
-    }
-
-
-    // --- 9. Zoom Banner (Top Right) ---
-    const banner = document.getElementById('zoom-banner');
-    function toggleBanner() {
-        if (!banner) return;
-        const visible = map.getZoom() < 13;
-        banner.classList.toggle('hidden', !visible);
-    }
-    map.on('load', toggleBanner);
-    map.on('zoom', toggleBanner);
-
-    // Hide loading spinner when map is ready
-    map.on('idle', () => {
-        const loading = document.getElementById('loading');
-        if (loading) loading.style.display = 'none';
-    });
-}); // --- END map.on('load') ---
-
-
-// --- Risk Group Buttons ---
-document.querySelectorAll('.risk-buttons button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const group = btn.dataset.group;
-        setActiveGroup(group);
-        document.querySelectorAll('.risk-buttons button')
-            .forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    });
+    map.addControl(geocoder, 'top-right');
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 });
 
-// --- Show/Hide Parcels by Group ---
-function setActiveGroup(riskGroup) {
-    parcelLayers.forEach(layer => {
-        const layerId = `${layer.id}-fill`;
-        if (!map.getLayer(layerId)) return;
-        if (riskGroup === 'ShowAll') {
-            map.setLayoutProperty(layerId, 'visibility', 'visible');
-            map.setPaintProperty(layerId, 'fill-opacity', 0.9);
-        } else {
-            if (layer.id.toLowerCase() === riskGroup.toLowerCase()) {
-                map.setLayoutProperty(layerId, 'visibility', 'visible');
-                map.setPaintProperty(layerId, 'fill-opacity', 0.9);
-            } else {
-                map.setLayoutProperty(layerId, 'visibility', 'none');
-            }
-        }
+// --- How To Use Modal Logic ---
+const howtoModal = document.getElementById('howto-modal');
+const howtoBanner = document.getElementById('howto-banner');
+const howtoClose = document.getElementById('howto-close');
 
-
+if (howtoBanner) {
+    howtoBanner.addEventListener('click', () => {
+        howtoModal.classList.remove('hidden');
     });
 }
 
-// --- HOW TO USE MODAL HANDLING ---
-document.addEventListener('DOMContentLoaded', function () {
-    var banner = document.getElementById('howto-banner');
-    var modal = document.getElementById('howto-modal');
-    var closeBtn = document.getElementById('howto-close');
+if (howtoClose) {
+    howtoClose.addEventListener('click', () => {
+        howtoModal.classList.add('hidden');
+    });
+}
 
-    if (banner && modal && closeBtn) {
-        banner.addEventListener('click', function () {
-            modal.classList.remove('hidden');
-            modal.focus();
-        });
-        closeBtn.addEventListener('click', function () {
-            modal.classList.add('hidden');
-        });
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
-            }
-        });
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                modal.classList.add('hidden');
-            }
-        });
-    }
-});
+if (howtoModal) {
+    howtoModal.addEventListener('click', (e) => {
+        if (e.target === howtoModal) {
+            howtoModal.classList.add('hidden');
+        }
+    });
+}
+
+// --- Methodology Link Logic ---
+const methodologyLink = document.getElementById('methodology-link');
+
+if (methodologyLink) {
+    methodologyLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.open('https://rebuildbydesign.org/nj-flood-risk', '_blank');
+    });
+}
