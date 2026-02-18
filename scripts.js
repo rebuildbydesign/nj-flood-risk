@@ -546,7 +546,7 @@ map.on('load', () => {
         bbox: [-75.559614, 38.928519, -73.893979, 41.357423],
         placeholder: 'Search NJ addresses...',
         flyTo: { 
-            zoom: 15, 
+            zoom: 10.5,
             bearing: 0, 
             speed: 1.2, 
             curve: 1
