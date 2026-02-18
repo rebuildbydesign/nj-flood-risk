@@ -163,10 +163,12 @@ function countyPopupHTML(props) {
         return hasTotal && (has2025Risk || has2050Risk);
     });
 
-    // Calculate summary metric
+    // Calculate summary metrics
     const totalAssets = assets.reduce((sum, a) => sum + (Number(a.total) || 0), 0);
+    const assetsAtRisk2025 = assets.reduce((sum, a) => sum + (Number(a.count2025) || 0), 0);
     const assetsAtRisk2050 = assets.reduce((sum, a) => sum + (Number(a.count2050) || 0), 0);
-    const summaryPct = totalAssets > 0 ? ((assetsAtRisk2050 / totalAssets) * 100).toFixed(1) : 0;
+    const summaryPct2025 = totalAssets > 0 ? ((assetsAtRisk2025 / totalAssets) * 100).toFixed(1) : 0;
+    const summaryPct2050 = totalAssets > 0 ? ((assetsAtRisk2050 / totalAssets) * 100).toFixed(1) : 0;
 
     // Helper function for compact asset bars (two-column layout)
     function compactAssetBar(label, count2025, pct2025, count2050, pct2050, total) {
@@ -175,30 +177,34 @@ function countyPopupHTML(props) {
         p2025 = Math.max(0, Math.min(p2025, 100));
         p2050 = Math.max(0, Math.min(p2050, 100));
         
-        // Light theme colors with good contrast
-        let color2025 = p2025 < 20 ? '#10b981' : p2025 < 50 ? '#f59e0b' : '#ef4444';
-        let color2050 = p2050 < 20 ? '#10b981' : p2050 < 50 ? '#f59e0b' : '#ef4444';
+        // Blue palette matching municipality branding
+        let color2025 = '#a5d5f1';
+        let color2050 = '#3a7fc3';
         
         return `
-            <div style="margin-bottom:10px;padding:10px;background:#f9fafb;border-radius:4px;border:1px solid #e5e7eb;">
-                <div style="font-size:0.9em;font-weight:600;margin-bottom:6px;color:#111827;">${label}</div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-                    <span style="width:38px;font-size:0.78em;color:#6b7280;font-weight:500;">2025:</span>
-                    <div style="flex:1;background:#e5e7eb;height:10px;border-radius:2px;overflow:hidden;">
-                        <div style="background:${color2025};width:${p2025}%;height:100%;transition:width 0.3s;"></div>
-                    </div>
-                    <span style="width:95px;text-align:right;font-size:0.82em;color:#374151;font-weight:500;">
-                        ${count2025 || 0}/${total} <span style="color:#6b7280;">(${p2025.toFixed(1)}%)</span>
-                    </span>
+            <div style="margin-bottom:8px;padding:8px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-left:6px solid #999;border-radius:0 4px 4px 0;transition:opacity 0.25s ease,transform 0.15s ease;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                    <span style="font-size:0.92em;font-weight:600;color:#111827;letter-spacing:0.2px;">${label}</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <span style="width:38px;font-size:0.78em;color:#6b7280;font-weight:500;">2050:</span>
-                    <div style="flex:1;background:#e5e7eb;height:10px;border-radius:2px;overflow:hidden;">
-                        <div style="background:${color2050};width:${p2050}%;height:100%;transition:width 0.3s;"></div>
+                <div style="display:flex;flex-direction:column;gap:3px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:0.8em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;">2025</span>
+                        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:2px;overflow:hidden;">
+                            <div style="background:${color2025};width:${p2025}%;height:100%;border-radius:2px;transition:width 0.4s ease;min-width:3px;"></div>
+                        </div>
+                        <span style="font-size:0.84em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;">
+                            ${count2025 || 0}/${total}
+                        </span>
                     </div>
-                    <span style="width:95px;text-align:right;font-size:0.82em;color:#374151;font-weight:500;">
-                        ${count2050 || 0}/${total} <span style="color:#6b7280;">(${p2050.toFixed(1)}%)</span>
-                    </span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:0.8em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;">2050</span>
+                        <div style="flex:1;height:10px;background:#e5e7eb;border-radius:2px;overflow:hidden;">
+                            <div style="background:${color2050};width:${p2050}%;height:100%;border-radius:2px;transition:width 0.4s ease;min-width:3px;"></div>
+                        </div>
+                        <span style="font-size:0.84em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;">
+                            ${count2050 || 0}/${total}
+                        </span>
+                    </div>
                 </div>
             </div>
         `;
@@ -235,80 +241,105 @@ function countyPopupHTML(props) {
 
     return `
         <div style="display:flex;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;width:720px;max-width:90vw;background:#fff;">
-            
+
             <!-- NARROW DISPLACEMENT SIDEBAR (Left) -->
             <div style="background:#f3f4f6;color:#111827;width:230px;padding:18px 16px;display:flex;flex-direction:column;border-right:2px solid #e5e7eb;">
                 <!-- County Header -->
-                <div style="border-left:4px solid #0054ff;padding-left:10px;margin-bottom:16px;">
-                    <div style="font-weight:700;font-size:1.25em;color:#111827;line-height:1.2;margin-bottom:10px;">
+                <div style="border-left:4px solid #111827;padding-left:10px;margin-bottom:14px;">
+                    <div style="font-weight:700;font-size:1.35em;color:#111827;line-height:1.2;margin-bottom:4px;">
                         ${props.COUNTY} COUNTY
                     </div>
-                    <div style="font-size:0.9em;color:#111827;line-height:1.45;margin-bottom:6px;">
-                        <span style="font-weight:600;color:#dc2626;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> of parcels 
-                        (<span style="font-weight:600;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</span> value) are at high flood risk now.
+                    <div style="font-size:0.88em;color:#374151;line-height:1.45;">
+                        ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#dc2626;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#dc2626;">${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}%</span> by 2050
                     </div>
-                    <div style="font-size:0.9em;color:#0054ff;font-weight:600;line-height:1.4;">
-                        By 2050: ${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}% ($${formatNumber(props.MARKET_VALUE_RISK_2050)} at risk)
+                </div>
+
+                <!-- Economic Impact Section -->
+                <div style="background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:10px 12px;margin-bottom:14px;">
+                    <div style="font-weight:600;font-size:0.84em;color:#6b7280;margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase;">
+                        Economic Risk
                     </div>
+                    <table style="width:100%;border-collapse:collapse;">
+                        <tr>
+                            <td style="padding:0 0 2px 0;"></td>
+                            <td style="padding:0 0 2px 0;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">2025</td>
+                            <td style="padding:0 0 2px 6px;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">2050</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid #f3f4f6;">
+                            <td style="padding:5px 0;font-size:0.92em;color:#374151;font-weight:500;">Market Value</td>
+                            <td style="padding:5px 0;text-align:right;font-size:1.0em;color:#2e7d32;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</td>
+                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.0em;color:#1b5e20;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:5px 0;font-size:0.92em;color:#374151;font-weight:500;">Tax Revenue</td>
+                            <td style="padding:5px 0;text-align:right;font-size:1.0em;color:#2e7d32;font-weight:700;">$${formatNumber(props.TAX_RISK_2024)}</td>
+                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.0em;color:#1b5e20;font-weight:700;">$${formatNumber(props.TAX_RISK_2050)}</td>
+                        </tr>
+                    </table>
                 </div>
 
                 <!-- Displacement Risk Section -->
                 <div style="flex:1;">
-                    <div style="font-weight:600;font-size:0.95em;margin-bottom:6px;color:#111827;">
-                        🏠 Displacement Risk & Migration (Parcel-Level)
+                    <div style="font-weight:600;font-size:1.0em;margin-bottom:6px;color:#111827;">
+                        Displacement Risk (Parcel-Level)
                     </div>
-                    <div style="font-size:0.85em;color:#6b7280;margin-bottom:8px;">
-                        Total parcels: ${totalParcels}
+                    <div style="font-size:0.84em;color:#6b7280;">
+                        Each property is classified by flood exposure and financial capacity.
                     </div>
                     ${riskBar}
-                    
+
                     <!-- Risk Categories in Table Format -->
                     <table style="width:100%;border-collapse:collapse;">
+                        <tr style="border-bottom:2px solid #d1d5db;">
+                            <td style="padding:0 0 4px 0;font-size:0.84em;color:#6b7280;font-weight:600;">Group</td>
+                            <td style="padding:0 0 4px 0;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">Parcels</td>
+                            <td style="padding:0 0 4px 8px;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">%</td>
+                        </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
-                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
-                                <span style="color:${riskColors.Crisis};font-size:1.1em;line-height:1;">⬤</span>
-                                <span style="color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">Crisis</span>
+                            <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
+                                <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Crisis};border-radius:2px;flex-shrink:0;"></span>
+                                <span style="color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">Crisis</span>
                             </td>
-                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">
                                 ${formatNumber(props.CRISIS_PARCELS)}
                             </td>
-                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">
                                 ${(props.CRISIS_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
-                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
-                                <span style="color:${riskColors.Emigrating};font-size:1.1em;line-height:1;">⬤</span>
-                                <span style="color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">Emigrating</span>
+                            <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
+                                <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Emigrating};border-radius:2px;flex-shrink:0;"></span>
+                                <span style="color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">Emigrating</span>
                             </td>
-                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">
                                 ${formatNumber(props.EMIGRATING_PARCELS)}
                             </td>
-                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">
                                 ${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
-                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
-                                <span style="color:${riskColors.Destination};font-size:1.1em;line-height:1;">⬤</span>
-                                <span style="color:${riskColors.Destination};font-weight:600;font-size:0.9em;">Destination</span>
+                            <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
+                                <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Destination};border-radius:2px;flex-shrink:0;"></span>
+                                <span style="color:${riskColors.Destination};font-weight:600;font-size:0.92em;">Destination</span>
                             </td>
-                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.92em;">
                                 ${formatNumber(props.DESTINATION_PARCELS)}
                             </td>
-                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.92em;">
                                 ${(props.DESTINATION_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding:6px 0;display:flex;align-items:center;gap:6px;">
-                                <span style="color:${riskColors.Stable};font-size:1.1em;line-height:1;">⬤</span>
-                                <span style="color:${riskColors.Stable};font-weight:600;font-size:0.9em;">Stable</span>
+                            <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
+                                <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Stable};border-radius:2px;flex-shrink:0;"></span>
+                                <span style="color:${riskColors.Stable};font-weight:600;font-size:0.92em;">Stable</span>
                             </td>
-                            <td style="padding:6px 0;text-align:right;color:#374151;font-weight:500;font-size:0.9em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.92em;">
                                 ${formatNumber(props.STABLE_PARCELS)}
                             </td>
-                            <td style="padding:6px 0 6px 8px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.92em;">
                                 ${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
@@ -316,9 +347,9 @@ function countyPopupHTML(props) {
                 </div>
 
                 <!-- CTA Link -->
-                <div style="margin-top:auto;padding-top:14px;border-top:2px solid #d1d5db;">
-                    <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank" 
-                       style="font-weight:600;color:#dd4000;text-decoration:none;font-size:0.88em;display:inline-flex;align-items:center;gap:4px;">
+                <div style="margin-top:auto;padding-top:12px;border-top:2px solid #d1d5db;">
+                    <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank"
+                       style="font-weight:600;color:#dd4000;text-decoration:none;font-size:0.92em;display:inline-flex;align-items:center;gap:4px;">
                         📋 Explore Full Strategy →
                     </a>
                 </div>
@@ -327,24 +358,23 @@ function countyPopupHTML(props) {
             <!-- WIDE INFRASTRUCTURE PANEL (Right) -->
             <div style="background:#ffffff;flex:1;padding:18px 20px;overflow-y:auto;max-height:500px;">
                 <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e5e7eb;">
-                    <div style="font-weight:700;font-size:1.08em;color:#111827;letter-spacing:0.01em;margin-bottom:6px;">
-                        🛡️ Critical Facilities in Flood-Prone Areas
+                    <div style="font-weight:700;font-size:1.1em;color:#111827;letter-spacing:0.01em;margin-bottom:6px;">
+                        Public Assets in Flood-Prone Areas
                     </div>
-                    <div style="font-size:0.9em;color:#374151;line-height:1.4;">
-                        By 2050: <span style="color:#dc2626;font-weight:600;">${summaryPct}%</span> of all public assets at risk
-                        <span style="color:#6b7280;"> (${assetsAtRisk2050}/${totalAssets} total)</span>
+                    <div style="font-size:0.88em;color:#374151;line-height:1.45;">
+                        ${totalAssets} public assets · <span style="font-weight:700;color:#dc2626;">${summaryPct2025}%</span> at risk in 2025, <span style="font-weight:700;color:#dc2626;">${summaryPct2050}%</span> by 2050
                     </div>
                 </div>
-                
+
                 ${assetsAtRisk.length > 0 ? `
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                         <div>${leftColumnHTML}</div>
                         <div>${rightColumnHTML}</div>
                     </div>
-                    <div style="font-size:0.78em;color:#6b7280;line-height:1.3;margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;">
+                    <div style="font-size:0.8em;color:#6b7280;line-height:1.3;margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;">
                         * Assets on 2050 floodplain or within 100ft to capture full impact on adjacent areas
                     </div>
-                ` : '<div style="font-size:0.9em;color:#6b7280;font-style:italic;">No critical infrastructure at risk</div>'}
+                ` : '<div style="font-size:0.92em;color:#6b7280;font-style:italic;">No critical infrastructure at risk</div>'}
             </div>
         </div>
     `;
