@@ -53,6 +53,18 @@ function formatNumber(num) {
     return num;
 }
 
+// --- County → Featured City cross-link mapping ---
+const countyToCity = {
+    'ESSEX':    { name: 'Newark',        key: 'NEWARK CITY' },
+    'UNION':    { name: 'Elizabeth',     key: 'ELIZABETH CITY' },
+    'CAMDEN':   { name: 'Camden',        key: 'CAMDEN CITY' },
+    'MERCER':   { name: 'Trenton',       key: 'TRENTON CITY' },
+    'HUDSON':   { name: 'Jersey City',   key: 'JERSEY CITY' },
+    'PASSAIC':  { name: 'Paterson',      key: 'PATERSON CITY' },
+    'MONMOUTH': { name: 'Asbury Park',   key: 'ASBURY PARK CITY' },
+    'ATLANTIC': { name: 'Atlantic City', key: 'ATLANTIC CITY' }
+};
+
 // --- V2 POPUP HTML FUNCTION ---
 function countyPopupHTML(props) {
     // Displacement parcels bar
@@ -244,6 +256,13 @@ function countyPopupHTML(props) {
 
     let totalParcels = formatNumber(props.TOTAL_PARCELS);
 
+    const featuredCity = countyToCity[props.COUNTY];
+    const cityLinkHTML = featuredCity ? `
+        <a href="https://rebuildbydesign.github.io/nj-flood-risk-city/?city=${encodeURIComponent(featuredCity.key)}" target="_blank"
+           style="font-weight:600;color:#0e8a8a;text-decoration:none;font-size:1.01em;display:inline-flex;align-items:center;gap:4px;margin-top:8px;">
+            🏙️ Explore ${featuredCity.name} Data →
+        </a>` : '';
+
     return `
         <div style="display:flex;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;width:720px;max-width:90vw;background:#fff;">
 
@@ -351,12 +370,13 @@ function countyPopupHTML(props) {
                     </table>
                 </div>
 
-                <!-- CTA Link -->
-                <div style="margin-top:auto;padding-top:12px;border-top:2px solid #d1d5db;">
+                <!-- CTA Links -->
+                <div style="margin-top:auto;padding-top:12px;border-top:2px solid #d1d5db;display:flex;flex-direction:column;gap:6px;">
                     <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank"
                        style="font-weight:600;color:#dd4000;text-decoration:none;font-size:1.01em;display:inline-flex;align-items:center;gap:4px;">
-                        Click to Learn More →
+                        📋 Read the Full Report →
                     </a>
+                    ${cityLinkHTML}
                 </div>
             </div>
 
