@@ -355,7 +355,7 @@ function countyPopupHTML(props) {
                 <div style="margin-top:auto;padding-top:12px;border-top:2px solid #d1d5db;">
                     <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank"
                        style="font-weight:600;color:#dd4000;text-decoration:none;font-size:1.01em;display:inline-flex;align-items:center;gap:4px;">
-                        📋 Explore Full Strategy →
+                        Click to Learn More →
                     </a>
                 </div>
             </div>
