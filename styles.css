@@ -225,23 +225,34 @@ h3 {
    ======================================== */
 .howto-banner {
   position: absolute;
-  bottom: 25px;
-  right: 15px;
-  background: rgba(0, 0, 0, 0.85);
+  bottom: 30px;
+  right: 10px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
   color: #fff;
-  padding: 8px 14px;
-  font-size: 0.875em;
-  z-index: 3;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
   cursor: pointer;
-  transition: background 0.2s;
-  font-family: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
 }
 
 .howto-banner:hover,
 .howto-banner:focus {
-  background: #333;
-  outline: 2px solid #f7c320;
+  background: rgba(0, 0, 0, 0.9);
+  border-color: #fff;
+  transform: scale(1.1);
+  outline: none;
 }
 
 .howto-modal {
@@ -331,19 +342,137 @@ h3 {
 }
 
 /* ========================================
+   FINDING CARD OVERLAY
+   ======================================== */
+#finding-card {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 260px;
+  background: rgba(0, 0, 0, 0.82);
+  border-left: none;
+  padding: 22px 20px 22px 28px; /* extra left padding for the dual bars */
+  z-index: 5;
+  pointer-events: none; /* don't block map clicks */
+}
+
+/* Two vertical bars: Crisis (#dd4000) + Emigrating (#f27407) */
+#finding-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 12px; /* 6px Crisis + 6px Emigrating */
+  background: linear-gradient(to right, #dd4000 50%, #f27407 50%);
+}
+
+.finding-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #dd4000;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.finding-text {
+  font-size: 1.05em;
+  line-height: 1.55;
+  color: #f0f0f0;
+  margin: 0;
+}
+
+.finding-text strong {
+  color: #ffffff;
+}
+
+.finding-crisis {
+  color: #dd4000;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
+/* Hide finding card on mobile and tablet */
+@media (max-width: 1024px) {
+  #finding-card {
+    display: none;
+  }
+}
+
+/* ========================================
+   COUNTY HOVER TOOLTIP
+   ======================================== */
+.county-hover-tooltip .mapboxgl-popup-content {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+.county-hover-tooltip .mapboxgl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========================================
+   GEOCODER HINT POPUP (after address search)
+   ======================================== */
+.geocoder-hint-popup .mapboxgl-popup-content {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 14px;
+  border-radius: 4px;
+  border-left: 3px solid #0e8a8a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.geocoder-hint-popup .mapboxgl-popup-tip {
+  border-bottom-color: rgba(255, 255, 255, 0.95);
+}
+
+/* ========================================
    GEOCODER CUSTOMIZATION
    ======================================== */
 .mapboxgl-ctrl-geocoder {
-  background-color: rgba(0, 0, 0, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background-color: #fff !important;
+  border: 2px solid #fff !important;
+  border-radius: 0 !important;
 }
 
-.mapboxgl-ctrl-geocoder input {
-  color: #fff !important;
+/* Force black text on all geocoder text elements */
+.mapboxgl-ctrl-geocoder input,
+.mapboxgl-ctrl-geocoder--input {
+  color: #000 !important;
+  border-radius: 0 !important;
 }
 
-.mapboxgl-ctrl-geocoder input::placeholder {
-  color: #aaa !important;
+.mapboxgl-ctrl-geocoder input::placeholder,
+.mapboxgl-ctrl-geocoder--input::placeholder {
+  color: #000 !important;
+  opacity: 0.55;
+}
+
+/* Black search icon */
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--icon {
+  fill: #000 !important;
+}
+
+/* ========================================
+   GEOCODER IN SIDEBAR — override map-control positioning
+   ======================================== */
+#geocoder-container {
+  margin-top: 8px;
+}
+
+#geocoder-container .mapboxgl-ctrl-geocoder {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
 }
 
 /* ========================================
@@ -415,27 +544,14 @@ h3 {
     padding: 8px 6px;
   }
 
-  /* County display */
-  .county-display {
-    padding: 8px;
-    margin: 8px 0;
-  }
 
-  .county-display h4 {
-    font-size: 0.9em;
-  }
-
-  .county-display p {
-    font-size: 0.86em;
-  }
-
-
-  /* Help banner */
+  /* Help banner — slightly smaller on mobile */
   .howto-banner {
-    top: 8px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    bottom: 24px;
     right: 8px;
-    font-size: 0.75em;
-    padding: 6px 10px;
   }
 
   /* Help modal */
@@ -458,24 +574,6 @@ h3 {
   }
 }
 
-/* Hide long/short help text by screen width */
-.howto-short {
-  display: none;
-}
-
-.howto-long {
-  display: inline;
-}
-
-@media (max-width: 768px) {
-  .howto-short {
-    display: inline;
-  }
-
-  .howto-long {
-    display: none;
-  }
-}
 
 /* ========================================
    TABLET (769px - 1024px)

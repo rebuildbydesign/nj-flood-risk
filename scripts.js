@@ -9,12 +9,14 @@ const riskColors = {
     Stable: '#f7c320'
 };
 
-// --- Dynamic zoom/center for mobile ---
+// --- Dynamic zoom/center ---
+// Always center on NJ geographically. On desktop, Mapbox padding (set after load)
+// visually shifts NJ left to clear the finding card — without moving the geographic center.
 let mapCenter = [-74.6, 40.15205];
-let mapZoom = 7.75;
+let mapZoom = 7.5;
 
-// Adjust for mobile
 if (window.innerWidth <= 600) {
+    // Mobile: finding card is hidden, keep NJ centered
     mapCenter = [-74.3, 39.9];
     mapZoom = 6.65;
 }
@@ -386,6 +388,12 @@ map.on('load', () => {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) loadingEl.style.display = 'none';
 
+    // On desktop, use Mapbox padding to visually shift NJ left, clearing the finding card.
+    // This is the correct approach — keeps NJ geographically centered, no broken coordinates.
+    if (window.innerWidth > 1024) {
+        map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 410 }, duration: 0 });
+    }
+
     // 1. Add parcel layers (displacement risk groups)
     parcelLayers.forEach(layer => {
         map.addSource(layer.id, { 
@@ -466,19 +474,71 @@ map.on('load', () => {
             // Popup on click (V2 style)
             map.on('click', 'county-fills', (e) => {
                 const feature = e.features[0];
-                new mapboxgl.Popup({ closeButton: true, maxWidth: "800px" })
+                const findingCard = document.getElementById('finding-card');
+
+                // Hide the finding card while the county popup is open
+                if (findingCard) findingCard.style.display = 'none';
+
+                const popup = new mapboxgl.Popup({ closeButton: true, maxWidth: "800px" })
                     .setLngLat(e.lngLat)
                     .setHTML(countyPopupHTML(feature.properties))
                     .addTo(map);
+
+                // Restore the finding card when the popup is closed
+                popup.on('close', () => {
+                    if (findingCard) findingCard.style.display = '';
+                });
             });
 
-            // Hover effect for counties
-            map.on('mouseenter', 'county-fills', () => {
+            // Hover tooltip for counties
+            let hoverPopup = null;
+
+            const toTitleCase = str => str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+
+            const hoverHTML = (rawName) => {
+                const name = toTitleCase(rawName);
+                return `
+                    <div style="font-size:0.8em;color:#555;margin-bottom:1px;line-height:1.2;">Click to learn more</div>
+                    <div style="font-size:0.9em;font-weight:700;color:#111;line-height:1.2;">${name} County</div>
+                `;
+            };
+
+            map.on('mouseenter', 'county-fills', (e) => {
                 map.getCanvas().style.cursor = 'pointer';
+                const countyName = e.features[0].properties.COUNTY;
+                hoverPopup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false,
+                    offset: [0, -8],
+                    className: 'county-hover-tooltip'
+                })
+                .setLngLat(e.lngLat)
+                .setHTML(hoverHTML(countyName))
+                .addTo(map);
             });
-            
+
+            map.on('mousemove', 'county-fills', (e) => {
+                if (hoverPopup) {
+                    const countyName = e.features[0].properties.COUNTY;
+                    hoverPopup.setLngLat(e.lngLat);
+                    hoverPopup.setHTML(hoverHTML(countyName));
+                }
+            });
+
             map.on('mouseleave', 'county-fills', () => {
                 map.getCanvas().style.cursor = '';
+                if (hoverPopup) {
+                    hoverPopup.remove();
+                    hoverPopup = null;
+                }
+            });
+
+            // Remove hover tooltip when county popup opens
+            map.on('click', 'county-fills', () => {
+                if (hoverPopup) {
+                    hoverPopup.remove();
+                    hoverPopup = null;
+                }
             });
         })
         .catch(error => {
@@ -540,20 +600,70 @@ map.on('load', () => {
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl,
         marker: {
-            color: '#dd4000' // Use crisis red for marker
+            color: '#00e1ff' // Teal blue marker — stands out from warm risk palette
         },
         countries: 'us',
         bbox: [-75.559614, 38.928519, -73.893979, 41.357423],
-        placeholder: 'Search NJ addresses...',
-        flyTo: { 
-            zoom: 10.5,
-            bearing: 0, 
-            speed: 1.2, 
-            curve: 1
-        }
+        placeholder: 'Enter Address Here',
+        flyTo: false // Disable built-in flyTo — we handle it manually so padding is respected
     });
 
-    map.addControl(geocoder, 'top-right');
+    // After geocoder result: fly with padding so marker lands at visual center,
+    // hide the finding card, and show a county hint popup
+    let geocoderHint = null;
+    geocoder.on('result', (e) => {
+        const coords = e.result.center;
+        const findingCard = document.getElementById('finding-card');
+
+        // Hide finding card while a searched location is active
+        if (findingCard) findingCard.style.display = 'none';
+
+        // Fly to result with the same right padding so the pin sits at visual center
+        map.flyTo({
+            center: coords,
+            zoom: 10.5,
+            padding: { top: 0, bottom: 0, left: 0, right: window.innerWidth > 1024 ? 410 : 0 },
+            speed: 1.2,
+            curve: 1
+        });
+
+        // Remove any previous hint
+        if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
+
+        // Show hint popup below the marker
+        geocoderHint = new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            offset: [0, 12],
+            anchor: 'top',
+            className: 'geocoder-hint-popup'
+        })
+        .setLngLat(coords)
+        .setHTML(`<span style="font-size:0.84em;color:#111;font-weight:500;">Click on a county to explore flood risk & infrastructure data</span>`)
+        .addTo(map);
+
+        // Auto-dismiss hint after 6 seconds
+        setTimeout(() => {
+            if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
+        }, 6000);
+    });
+
+    // Restore finding card when geocoder is cleared
+    geocoder.on('clear', () => {
+        const findingCard = document.getElementById('finding-card');
+        if (findingCard) findingCard.style.display = '';
+    });
+
+    // Clear hint when user clicks a county
+    map.on('click', 'county-fills', () => {
+        if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
+    });
+
+    // Mount geocoder directly into the sidebar Step 2 container
+    const geocoderContainer = document.getElementById('geocoder-container');
+    if (geocoderContainer) {
+        geocoderContainer.appendChild(geocoder.onAdd(map));
+    }
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 });
 
