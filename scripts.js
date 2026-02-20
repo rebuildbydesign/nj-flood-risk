@@ -172,6 +172,9 @@ function countyPopupHTML(props) {
     const summaryPct2025 = totalAssets > 0 ? ((assetsAtRisk2025 / totalAssets) * 100).toFixed(1) : 0;
     const summaryPct2050 = totalAssets > 0 ? ((assetsAtRisk2050 / totalAssets) * 100).toFixed(1) : 0;
 
+    // Comma-format helper for asset counts
+    const fmtComma = n => Number(n || 0).toLocaleString('en-US');
+
     // Helper function for compact asset bars (two-column layout)
     function compactAssetBar(label, count2025, pct2025, count2050, pct2050, total) {
         let p2025 = Number(pct2025) || 0;
@@ -186,25 +189,25 @@ function countyPopupHTML(props) {
         return `
             <div style="margin-bottom:8px;padding:8px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-left:6px solid #999;border-radius:0 4px 4px 0;transition:opacity 0.25s ease,transform 0.15s ease;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <span style="font-size:0.92em;font-weight:600;color:#111827;letter-spacing:0.2px;">${label}</span>
+                    <span style="font-size:1.01em;font-weight:600;color:#111827;letter-spacing:0.2px;">${label}</span>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:3px;">
+                <div style="display:flex;flex-direction:column;gap:4px;">
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:0.8em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;">2025</span>
+                        <span style="font-size:0.88em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;line-height:1.1;">2025</span>
                         <div style="flex:1;height:10px;background:#e5e7eb;border-radius:2px;overflow:hidden;">
                             <div style="background:${color2025};width:${p2025}%;height:100%;border-radius:2px;transition:width 0.4s ease;min-width:3px;"></div>
                         </div>
-                        <span style="font-size:0.84em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;">
-                            ${count2025 || 0}/${total}
+                        <span style="font-size:0.92em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;line-height:1.1;">
+                            ${fmtComma(count2025)}/${fmtComma(total)}
                         </span>
                     </div>
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:0.8em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;">2050</span>
+                        <span style="font-size:0.88em;color:#6b7280;width:28px;flex-shrink:0;text-align:right;font-weight:500;line-height:1.1;">2050</span>
                         <div style="flex:1;height:10px;background:#e5e7eb;border-radius:2px;overflow:hidden;">
                             <div style="background:${color2050};width:${p2050}%;height:100%;border-radius:2px;transition:width 0.4s ease;min-width:3px;"></div>
                         </div>
-                        <span style="font-size:0.84em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;">
-                            ${count2050 || 0}/${total}
+                        <span style="font-size:0.92em;color:#374151;width:50px;flex-shrink:0;text-align:right;font-weight:600;line-height:1.1;">
+                            ${fmtComma(count2050)}/${fmtComma(total)}
                         </span>
                     </div>
                 </div>
@@ -248,44 +251,44 @@ function countyPopupHTML(props) {
             <div style="background:#f3f4f6;color:#111827;width:230px;padding:18px 16px;display:flex;flex-direction:column;border-right:2px solid #e5e7eb;">
                 <!-- County Header -->
                 <div style="border-left:4px solid #111827;padding-left:10px;margin-bottom:14px;">
-                    <div style="font-weight:700;font-size:1.35em;color:#111827;line-height:1.2;margin-bottom:4px;">
+                    <div style="font-weight:700;font-size:1.49em;color:#111827;line-height:1.2;margin-bottom:4px;">
                         ${props.COUNTY} COUNTY
                     </div>
-                    <div style="font-size:0.88em;color:#374151;line-height:1.45;">
+                    <div style="font-size:0.97em;color:#374151;line-height:1.45;">
                         ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#dc2626;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#dc2626;">${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}%</span> by 2050
                     </div>
                 </div>
 
                 <!-- Economic Impact Section -->
                 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:10px 12px;margin-bottom:14px;">
-                    <div style="font-weight:600;font-size:0.84em;color:#6b7280;margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase;">
+                    <div style="font-weight:600;font-size:0.92em;color:#6b7280;margin-bottom:8px;letter-spacing:0.3px;text-transform:uppercase;">
                         Economic Risk
                     </div>
                     <table style="width:100%;border-collapse:collapse;">
                         <tr>
                             <td style="padding:0 0 2px 0;"></td>
-                            <td style="padding:0 0 2px 0;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">2025</td>
-                            <td style="padding:0 0 2px 6px;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">2050</td>
+                            <td style="padding:0 0 2px 0;text-align:right;font-size:0.92em;color:#6b7280;font-weight:600;">2025</td>
+                            <td style="padding:0 0 2px 6px;text-align:right;font-size:0.92em;color:#6b7280;font-weight:600;">2050</td>
                         </tr>
                         <tr style="border-bottom:1px solid #f3f4f6;">
-                            <td style="padding:5px 0;font-size:0.92em;color:#374151;font-weight:500;">Market Value</td>
-                            <td style="padding:5px 0;text-align:right;font-size:1.0em;color:#2e7d32;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</td>
-                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.0em;color:#1b5e20;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</td>
+                            <td style="padding:5px 0;font-size:1.01em;color:#374151;font-weight:500;">Market Value</td>
+                            <td style="padding:5px 0;text-align:right;font-size:1.1em;color:#2e7d32;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</td>
+                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.1em;color:#1b5e20;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</td>
                         </tr>
                         <tr>
-                            <td style="padding:5px 0;font-size:0.92em;color:#374151;font-weight:500;">Tax Revenue</td>
-                            <td style="padding:5px 0;text-align:right;font-size:1.0em;color:#2e7d32;font-weight:700;">$${formatNumber(props.TAX_RISK_2024)}</td>
-                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.0em;color:#1b5e20;font-weight:700;">$${formatNumber(props.TAX_RISK_2050)}</td>
+                            <td style="padding:5px 0;font-size:1.01em;color:#374151;font-weight:500;">Tax Revenue</td>
+                            <td style="padding:5px 0;text-align:right;font-size:1.1em;color:#2e7d32;font-weight:700;">$${formatNumber(props.TAX_RISK_2024)}</td>
+                            <td style="padding:5px 0 5px 6px;text-align:right;font-size:1.1em;color:#1b5e20;font-weight:700;">$${formatNumber(props.TAX_RISK_2050)}</td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- Displacement Risk Section -->
                 <div style="flex:1;">
-                    <div style="font-weight:600;font-size:1.0em;margin-bottom:6px;color:#111827;">
+                    <div style="font-weight:600;font-size:1.1em;margin-bottom:6px;color:#111827;">
                         Displacement Risk (Parcel-Level)
                     </div>
-                    <div style="font-size:0.84em;color:#6b7280;">
+                    <div style="font-size:0.95em;color:#6b7280;">
                         Each property is classified by flood exposure and financial capacity.
                     </div>
                     ${riskBar}
@@ -293,55 +296,55 @@ function countyPopupHTML(props) {
                     <!-- Risk Categories in Table Format -->
                     <table style="width:100%;border-collapse:collapse;">
                         <tr style="border-bottom:2px solid #d1d5db;">
-                            <td style="padding:0 0 4px 0;font-size:0.84em;color:#6b7280;font-weight:600;">Group</td>
-                            <td style="padding:0 0 4px 0;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">Parcels</td>
-                            <td style="padding:0 0 4px 8px;text-align:right;font-size:0.84em;color:#6b7280;font-weight:600;">%</td>
+                            <td style="padding:0 0 4px 0;font-size:0.92em;color:#6b7280;font-weight:600;">Group</td>
+                            <td style="padding:0 0 4px 0;text-align:right;font-size:0.92em;color:#6b7280;font-weight:600;">Parcels</td>
+                            <td style="padding:0 0 4px 8px;text-align:right;font-size:0.92em;color:#6b7280;font-weight:600;">%</td>
                         </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
                             <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
                                 <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Crisis};border-radius:2px;flex-shrink:0;"></span>
-                                <span style="color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">Crisis</span>
+                                <span style="color:${riskColors.Crisis};font-weight:600;font-size:1.01em;">Crisis</span>
                             </td>
-                            <td style="padding:5px 0;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:1.01em;">
                                 ${formatNumber(props.CRISIS_PARCELS)}
                             </td>
-                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:1.01em;">
                                 ${(props.CRISIS_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
                             <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
                                 <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Emigrating};border-radius:2px;flex-shrink:0;"></span>
-                                <span style="color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">Emigrating</span>
+                                <span style="color:${riskColors.Emigrating};font-weight:600;font-size:1.01em;">Emigrating</span>
                             </td>
-                            <td style="padding:5px 0;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:1.01em;">
                                 ${formatNumber(props.EMIGRATING_PARCELS)}
                             </td>
-                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:1.01em;">
                                 ${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr style="border-bottom:1px solid #e5e7eb;">
                             <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
                                 <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Destination};border-radius:2px;flex-shrink:0;"></span>
-                                <span style="color:${riskColors.Destination};font-weight:600;font-size:0.92em;">Destination</span>
+                                <span style="color:${riskColors.Destination};font-weight:600;font-size:1.01em;">Destination</span>
                             </td>
-                            <td style="padding:5px 0;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:1.01em;">
                                 ${formatNumber(props.DESTINATION_PARCELS)}
                             </td>
-                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:1.01em;">
                                 ${(props.DESTINATION_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
                         <tr>
                             <td style="padding:5px 0;display:flex;align-items:center;gap:5px;">
                                 <span style="display:inline-block;width:10px;height:10px;background:${riskColors.Stable};border-radius:2px;flex-shrink:0;"></span>
-                                <span style="color:${riskColors.Stable};font-weight:600;font-size:0.92em;">Stable</span>
+                                <span style="color:${riskColors.Stable};font-weight:600;font-size:1.01em;">Stable</span>
                             </td>
-                            <td style="padding:5px 0;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:1.01em;">
                                 ${formatNumber(props.STABLE_PARCELS)}
                             </td>
-                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.92em;">
+                            <td style="padding:5px 0 5px 8px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:1.01em;">
                                 ${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%
                             </td>
                         </tr>
@@ -351,7 +354,7 @@ function countyPopupHTML(props) {
                 <!-- CTA Link -->
                 <div style="margin-top:auto;padding-top:12px;border-top:2px solid #d1d5db;">
                     <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank"
-                       style="font-weight:600;color:#dd4000;text-decoration:none;font-size:0.92em;display:inline-flex;align-items:center;gap:4px;">
+                       style="font-weight:600;color:#dd4000;text-decoration:none;font-size:1.01em;display:inline-flex;align-items:center;gap:4px;">
                         📋 Explore Full Strategy →
                     </a>
                 </div>
@@ -360,11 +363,11 @@ function countyPopupHTML(props) {
             <!-- WIDE INFRASTRUCTURE PANEL (Right) -->
             <div style="background:#ffffff;flex:1;padding:18px 20px;overflow-y:auto;max-height:500px;">
                 <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e5e7eb;">
-                    <div style="font-weight:700;font-size:1.1em;color:#111827;letter-spacing:0.01em;margin-bottom:6px;">
+                    <div style="font-weight:700;font-size:1.21em;color:#111827;letter-spacing:0.01em;margin-bottom:6px;">
                         Public Assets in Flood-Prone Areas
                     </div>
-                    <div style="font-size:0.88em;color:#374151;line-height:1.45;">
-                        ${totalAssets} public assets · <span style="font-weight:700;color:#dc2626;">${summaryPct2025}%</span> at risk in 2025, <span style="font-weight:700;color:#dc2626;">${summaryPct2050}%</span> by 2050
+                    <div style="font-size:0.97em;color:#374151;line-height:1.45;">
+                        ${fmtComma(totalAssets)} public assets · <span style="font-weight:700;color:#dc2626;">${summaryPct2025}%</span> at risk in 2025, <span style="font-weight:700;color:#dc2626;">${summaryPct2050}%</span> by 2050
                     </div>
                 </div>
 
@@ -373,10 +376,10 @@ function countyPopupHTML(props) {
                         <div>${leftColumnHTML}</div>
                         <div>${rightColumnHTML}</div>
                     </div>
-                    <div style="font-size:0.8em;color:#6b7280;line-height:1.3;margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;">
-                        * Assets on 2050 floodplain or within 100ft to capture full impact on adjacent areas
+                    <div style="font-size:0.88em;color:#6b7280;line-height:1.3;margin-top:16px;padding-top:12px;border-top:1px solid #e5e7eb;font-style:italic;">
+                        * Assets were analyzed with a 100-foot buffer and intersected with 2025 and 2050 floodplains to capture full impact on adjacent areas
                     </div>
-                ` : '<div style="font-size:0.92em;color:#6b7280;font-style:italic;">No critical infrastructure at risk</div>'}
+                ` : '<div style="font-size:1.01em;color:#6b7280;font-style:italic;">No critical infrastructure at risk</div>'}
             </div>
         </div>
     `;
