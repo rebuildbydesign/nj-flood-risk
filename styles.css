@@ -208,14 +208,17 @@ h3 {
 }
 
 
-  /* Logo positioning - smaller */
+  /* Logo overlay on map */
   .map-logo {
+    position: absolute;
     top: 12px;
     left: 12px;
+    z-index: 5;
   }
 
   .map-logo img {
-    max-width: 50px;
+    max-width: 80px;
+    display: block;
   }
 
 #loading {
