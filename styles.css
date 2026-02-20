@@ -207,6 +207,17 @@ h3 {
   background: #f5f5f5;
 }
 
+
+  /* Logo positioning - smaller */
+  .map-logo {
+    top: 12px;
+    left: 12px;
+  }
+
+  .map-logo img {
+    max-width: 50px;
+  }
+
 #loading {
   position: absolute;
   top: 50%;
