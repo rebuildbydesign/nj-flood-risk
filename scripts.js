@@ -53,6 +53,28 @@ function formatNumber(num) {
     return num;
 }
 
+// --- Blue Acres State ---
+let blueAcresVisible = false;
+
+// Pre-computed Blue Acres stats per county
+const blueAcresCountyStats = {
+    'Atlantic':   { count: 20,  acres: 31.8 },
+    'Bergen':     { count: 54,  acres: 10.8 },
+    'Burlington': { count: 56,  acres: 65.7 },
+    'Cumberland': { count: 131, acres: 55.1 },
+    'Essex':      { count: 25,  acres: 5.0 },
+    'Hunterdon':  { count: 6,   acres: 5.8 },
+    'Middlesex':  { count: 579, acres: 74.6 },
+    'Monmouth':   { count: 19,  acres: 14.8 },
+    'Morris':     { count: 119, acres: 28.0 },
+    'Passaic':    { count: 191, acres: 34.2 },
+    'Somerset':   { count: 398, acres: 36.7 },
+    'Union':      { count: 53,  acres: 8.8 },
+    'Warren':     { count: 26,  acres: 16.9 }
+};
+const blueAcresTotalCount = 1677;
+const blueAcresTotalAcres = 388.1;
+
 // --- County → Featured City cross-link mapping ---
 const countyToCity = {
     'ESSEX':    { name: 'Newark',        key: 'NEWARK CITY' },
@@ -67,6 +89,35 @@ const countyToCity = {
 
 // --- V2 POPUP HTML FUNCTION ---
 function countyPopupHTML(props) {
+    // Blue Acres stats for this county
+    const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    const baStats = blueAcresCountyStats[countyNameTitleCase];
+    const baHTML = baStats ? `
+        <div style="background:#f0fdfa;border:1px solid #99f6e4;border-left:4px solid #0d9488;border-radius:0 4px 4px 0;padding:10px 12px;margin-bottom:14px;">
+            <div style="font-weight:600;font-size:0.92em;color:#0d9488;margin-bottom:6px;letter-spacing:0.3px;text-transform:uppercase;">
+                🌿 Blue Acres Buyouts
+            </div>
+            <div style="font-size:1.05em;color:#111827;font-weight:700;">
+                ${baStats.count.toLocaleString()} parcels
+            </div>
+            <div style="font-size:0.92em;color:#374151;margin-top:2px;">
+                ${baStats.acres.toFixed(1)} acres returned to nature
+            </div>
+            <div style="font-size:0.82em;color:#6b7280;margin-top:4px;font-style:italic;">
+                Part of ${blueAcresTotalCount.toLocaleString()} statewide buyouts
+            </div>
+        </div>
+    ` : `
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-left:4px solid #d1d5db;border-radius:0 4px 4px 0;padding:10px 12px;margin-bottom:14px;">
+            <div style="font-weight:600;font-size:0.92em;color:#9ca3af;margin-bottom:4px;letter-spacing:0.3px;text-transform:uppercase;">
+                🌿 Blue Acres Buyouts
+            </div>
+            <div style="font-size:0.92em;color:#6b7280;font-style:italic;">
+                No Blue Acres acquisitions in this county
+            </div>
+        </div>
+    `;
+
     // Displacement parcels bar
     const riskBar = `
         <div style="display:flex;height:18px;border-radius:2px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
@@ -301,6 +352,9 @@ function countyPopupHTML(props) {
                         </tr>
                     </table>
                 </div>
+
+                <!-- Blue Acres Section -->
+                ${baHTML}
 
                 <!-- Displacement Risk Section -->
                 <div style="flex:1;">
@@ -601,19 +655,22 @@ map.on('load', () => {
         btn.addEventListener('click', () => {
             const group = btn.getAttribute('data-group');
             const isActive = btn.classList.contains('active');
+            const layerId = group.toLowerCase();
 
             if (isActive) {
                 // Deactivate this group
                 btn.classList.remove('active');
-                const layerId = group.toLowerCase();
                 if (map.getLayer(`${layerId}-fill`)) map.setLayoutProperty(`${layerId}-fill`, 'visibility', 'none');
                 if (map.getLayer(`${layerId}-outline`)) map.setLayoutProperty(`${layerId}-outline`, 'visibility', 'none');
             } else {
-                // Activate this group
+                // Activate this group (track intent via class)
                 btn.classList.add('active');
-                const layerId = group.toLowerCase();
-                if (map.getLayer(`${layerId}-fill`)) map.setLayoutProperty(`${layerId}-fill`, 'visibility', 'visible');
-                if (map.getLayer(`${layerId}-outline`)) map.setLayoutProperty(`${layerId}-outline`, 'visibility', 'visible');
+                // Only actually show layers if Blue Acres isn't suppressing them
+                const suppressed = blueAcresVisible;
+                if (!suppressed) {
+                    if (map.getLayer(`${layerId}-fill`)) map.setLayoutProperty(`${layerId}-fill`, 'visibility', 'visible');
+                    if (map.getLayer(`${layerId}-outline`)) map.setLayoutProperty(`${layerId}-outline`, 'visibility', 'visible');
+                }
             }
         });
     });
@@ -688,6 +745,219 @@ map.on('load', () => {
         geocoderContainer.appendChild(geocoder.onAdd(map));
     }
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // ======================================
+    // 6. BLUE ACRES LAYERS
+    // ======================================
+
+    // Add Blue Acres polygon source
+    map.addSource('blueacres', {
+        type: 'geojson',
+        data: 'data/blueacres.geojson'
+    });
+
+    // Add Blue Acres centroid source (clustered)
+    map.addSource('blueacres-centroids', {
+        type: 'geojson',
+        data: 'data/blueacres_centroids.geojson',
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 60
+    });
+
+    // Blue Acres fill layer
+    map.addLayer({
+        id: 'blueacres-fill',
+        type: 'fill',
+        source: 'blueacres',
+        paint: {
+            'fill-color': '#0d9488',
+            'fill-opacity': 0.45
+        },
+        layout: { visibility: 'none' }
+    });
+
+    // Blue Acres outline layer
+    map.addLayer({
+        id: 'blueacres-outline',
+        type: 'line',
+        source: 'blueacres',
+        paint: {
+            'line-color': '#0f766e',
+            'line-width': 1.5,
+            'line-opacity': 0.8
+        },
+        layout: { visibility: 'none' }
+    });
+
+    // Cluster circles
+    map.addLayer({
+        id: 'blueacres-clusters',
+        type: 'circle',
+        source: 'blueacres-centroids',
+        filter: ['has', 'point_count'],
+        paint: {
+            'circle-color': '#0d9488',
+            'circle-opacity': 0.9,
+            'circle-radius': [
+                'step', ['get', 'point_count'],
+                16, 10, 22, 50, 30, 200, 38
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#fff'
+        },
+        layout: { visibility: 'none' }
+    });
+
+    // Cluster count labels
+    map.addLayer({
+        id: 'blueacres-cluster-count',
+        type: 'symbol',
+        source: 'blueacres-centroids',
+        filter: ['has', 'point_count'],
+        layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 13,
+            visibility: 'none'
+        },
+        paint: {
+            'text-color': '#ffffff'
+        }
+    });
+
+    // Unclustered individual points (visible at high zoom)
+    map.addLayer({
+        id: 'blueacres-unclustered',
+        type: 'circle',
+        source: 'blueacres-centroids',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+            'circle-color': '#0d9488',
+            'circle-radius': 5,
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': '#fff'
+        },
+        layout: { visibility: 'none' }
+    });
+
+    // Blue Acres hover popup
+    let blueAcresPopup = null;
+
+    map.on('mouseenter', 'blueacres-fill', (e) => {
+        if (!blueAcresVisible) return;
+        map.getCanvas().style.cursor = 'pointer';
+        const props = e.features[0].properties;
+        const name = props.NAME_LABEL || props.FEE_SIMPLE || 'Blue Acres Parcel';
+        const use = props.USE_LABEL || '';
+        const acres = props.GISACRES ? Number(props.GISACRES).toFixed(2) : '–';
+        const date = props.PRESERVATI ? props.PRESERVATI.substring(0, 10) : '–';
+        const muni = props.MUNICIPALI || '';
+
+        blueAcresPopup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: [0, -5]
+        })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+            <div style="font-size:0.88em;line-height:1.45;max-width:220px;">
+                <div style="font-weight:700;color:#0d9488;margin-bottom:2px;">🌿 ${name}</div>
+                <div style="color:#555;">${muni} · ${use}</div>
+                <div style="color:#555;">${acres} acres · Preserved ${date}</div>
+            </div>
+        `)
+        .addTo(map);
+    });
+
+    map.on('mousemove', 'blueacres-fill', (e) => {
+        if (blueAcresPopup) blueAcresPopup.setLngLat(e.lngLat);
+    });
+
+    map.on('mouseleave', 'blueacres-fill', () => {
+        map.getCanvas().style.cursor = '';
+        if (blueAcresPopup) {
+            blueAcresPopup.remove();
+            blueAcresPopup = null;
+        }
+    });
+
+    // Cluster click → zoom in
+    map.on('click', 'blueacres-clusters', (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: ['blueacres-clusters'] });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('blueacres-centroids').getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err) return;
+            map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+        });
+    });
+
+    // Toggle Blue Acres visibility
+    const blueAcresToggle = document.getElementById('toggle-blue-acres');
+    const blueAcresStatsEl = document.getElementById('blue-acres-stats');
+
+    // Force-set every displacement layer to the correct visibility.
+    // Called on BA toggle and also on every zoom change to catch any leaks.
+    function syncDisplacementWithBlueAcres() {
+        if (blueAcresVisible) {
+            // BA is on → force ALL displacement layers hidden, no exceptions
+            parcelLayers.forEach(layer => {
+                if (map.getLayer(`${layer.id}-fill`))    map.setLayoutProperty(`${layer.id}-fill`, 'visibility', 'none');
+                if (map.getLayer(`${layer.id}-outline`)) map.setLayoutProperty(`${layer.id}-outline`, 'visibility', 'none');
+            });
+        } else {
+            // BA is off → restore layers that have active toggle buttons
+            parcelLayers.forEach(layer => {
+                const btn = document.querySelector(`[data-group="${layer.id.charAt(0).toUpperCase() + layer.id.slice(1)}"]`);
+                const isActive = btn && btn.classList.contains('active');
+                const vis = isActive ? 'visible' : 'none';
+                if (map.getLayer(`${layer.id}-fill`))    map.setLayoutProperty(`${layer.id}-fill`, 'visibility', vis);
+                if (map.getLayer(`${layer.id}-outline`)) map.setLayoutProperty(`${layer.id}-outline`, 'visibility', vis);
+            });
+        }
+    }
+
+    // Also sync on zoom to catch any edge cases
+    map.on('zoomend', syncDisplacementWithBlueAcres);
+
+    if (blueAcresToggle) {
+        blueAcresToggle.addEventListener('change', () => {
+            blueAcresVisible = blueAcresToggle.checked;
+            const vis = blueAcresVisible ? 'visible' : 'none';
+
+            ['blueacres-fill', 'blueacres-outline', 'blueacres-clusters',
+             'blueacres-cluster-count', 'blueacres-unclustered'].forEach(id => {
+                if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+            });
+
+            // Force displacement layers to correct state
+            syncDisplacementWithBlueAcres();
+
+            // Hide finding card when BA is on
+            const findingCard = document.getElementById('finding-card');
+            if (findingCard && blueAcresVisible) findingCard.style.display = 'none';
+
+            // Update stats display
+            if (blueAcresVisible) {
+                blueAcresStatsEl.classList.remove('hidden');
+                blueAcresStatsEl.innerHTML = `
+                    <span class="stat-highlight">${blueAcresTotalCount.toLocaleString()}</span> parcels acquired statewide
+                    · <span class="stat-highlight">${blueAcresTotalAcres.toFixed(1)}</span> acres returned to nature
+                `;
+            } else {
+                blueAcresStatsEl.classList.add('hidden');
+            }
+        });
+    }
+
+    // Finding card close button
+    const findingClose = document.getElementById('finding-close');
+    if (findingClose) {
+        findingClose.addEventListener('click', () => {
+            const card = document.getElementById('finding-card');
+            if (card) card.style.display = 'none';
+        });
+    }
 });
 
 // --- How To Use Modal Logic ---

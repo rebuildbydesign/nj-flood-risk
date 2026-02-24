@@ -64,7 +64,22 @@
     <p class="helper-text">
       Click any county to see how many residents face displacement and which critical public assets are in the floodplain today and by 2050.
     </p>
-    
+
+    <!-- Step 4: Blue Acres Buyouts -->
+    <div id="blue-acres-section">
+      <h3>Step 4: Blue Acres Buyouts</h3>
+      <p class="helper-text">
+        NJ's <strong>Blue Acres</strong> program buys flood-prone homes and returns
+        the land to nature — a proven solution to reduce flood risk. Green parcels
+        show properties already acquired statewide.
+      </p>
+      <label class="toggle-switch-label">
+        <span class="toggle-text">Show Blue Acres parcels</span>
+        <input type="checkbox" id="toggle-blue-acres" />
+        <span class="toggle-slider"></span>
+      </label>
+      <div id="blue-acres-stats" class="blue-acres-stats hidden"></div>
+    </div>
 
   </div>
   <!-- End Sidebar -->
@@ -85,6 +100,7 @@
 
     <!-- FINDING CARD OVERLAY -->
     <div id="finding-card">
+      <button id="finding-close" aria-label="Close finding">&times;</button>
       <div class="finding-label">KEY FINDING</div>
       <p class="finding-text">
         By 2050, nearly <strong>1.3 million</strong> New Jerseyans face displacement &mdash;

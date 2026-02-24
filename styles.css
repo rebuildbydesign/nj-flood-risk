@@ -199,6 +199,101 @@ h3 {
 
 
 /* ========================================
+   STEP 4 - Blue Acres Buyouts
+   ======================================== */
+#blue-acres-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+/* Toggle switch */
+.toggle-switch-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin: 10px 0;
+  padding: 10px 12px;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 4px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  font-weight: normal;
+}
+
+.toggle-switch-label:hover {
+  border-color: #14b8a6;
+  background: #1a2a2a;
+}
+
+.toggle-text {
+  font-size: 0.86em;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #4b5563;
+  border-radius: 12px;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+#toggle-blue-acres:checked + .toggle-slider {
+  background: #0d9488;
+}
+
+#toggle-blue-acres:checked + .toggle-slider::after {
+  transform: translateX(20px);
+}
+
+#toggle-blue-acres {
+  display: none;
+}
+
+/* Blue Acres stats box */
+.blue-acres-stats {
+  font-size: 0.82em;
+  color: #d1d5db;
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: rgba(13, 148, 136, 0.08);
+  border-left: 3px solid #0d9488;
+  border-radius: 0 4px 4px 0;
+  margin-top: 6px;
+}
+
+.blue-acres-stats .stat-highlight {
+  color: #2dd4bf;
+  font-weight: 600;
+}
+
+.blue-acres-stats .stat-county {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ========================================
    MAP CONTAINER
    ======================================== */
 #map {
@@ -368,7 +463,25 @@ h3 {
   border-left: none;
   padding: 22px 20px 22px 28px; /* extra left padding for the dual bars */
   z-index: 5;
-  pointer-events: none; /* don't block map clicks */
+  pointer-events: auto;
+}
+
+#finding-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+#finding-close:hover {
+  color: #fff;
 }
 
 /* Two vertical bars: Crisis (#dd4000) + Emigrating (#f27407) */
@@ -558,6 +671,25 @@ h3 {
     padding: 8px 6px;
   }
 
+
+  /* Blue Acres section */
+  #blue-acres-section {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .toggle-switch-label {
+    padding: 8px 10px;
+  }
+
+  .toggle-text {
+    font-size: 0.8em;
+  }
+
+  .blue-acres-stats {
+    font-size: 0.78em;
+    padding: 6px 8px;
+  }
 
   /* Help banner — slightly smaller on mobile */
   .howto-banner {
