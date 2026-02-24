@@ -207,61 +207,7 @@ h3 {
   border-top: 1px solid #333;
 }
 
-/* Toggle switch */
-.toggle-switch-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  margin: 10px 0;
-  padding: 10px 12px;
-  background: #1a1a1a;
-  border: 2px solid #333;
-  border-radius: 4px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-  font-weight: normal;
-}
-
-.toggle-switch-label:hover {
-  border-color: #14b8a6;
-  background: #1a2a2a;
-}
-
-.toggle-text {
-  font-size: 0.86em;
-  color: #d1d5db;
-  font-weight: 500;
-}
-
-.toggle-slider {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  background: #4b5563;
-  border-radius: 12px;
-  flex-shrink: 0;
-  transition: background-color 0.3s ease;
-}
-
-.toggle-slider::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.3s ease;
-}
-
-#toggle-blue-acres:checked + .toggle-slider {
-  background: #0d9488;
-}
-
-#toggle-blue-acres:checked + .toggle-slider::after {
-  transform: translateX(20px);
-}
+/* Blue Acres button uses .risk-buttons button styles */
 
 #toggle-blue-acres {
   display: none;
@@ -530,33 +476,68 @@ h3 {
 }
 
 /* ========================================
-   COUNTY HOVER TOOLTIP
+   COUNTY CLICK POPUP (dark mode)
+   ======================================== */
+.mapboxgl-popup-content {
+  background: #1f1f1f !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: #1f1f1f !important;
+}
+
+.mapboxgl-popup-close-button {
+  color: #b0b0b0 !important;
+  font-size: 28px !important;
+  right: 8px !important;
+  top: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: #e0e0e0 !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 6px;
+}
+
+/* ========================================
+   COUNTY HOVER TOOLTIP (dark mode)
    ======================================== */
 .county-hover-tooltip .mapboxgl-popup-content {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 6px 12px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  background: rgba(42, 42, 42, 0.95) !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
   pointer-events: none;
 }
 
 .county-hover-tooltip .mapboxgl-popup-tip {
-  border-top-color: rgba(255, 255, 255, 0.9);
+  border-top-color: rgba(42, 42, 42, 0.95) !important;
 }
 
 /* ========================================
    GEOCODER HINT POPUP (after address search)
    ======================================== */
 .geocoder-hint-popup .mapboxgl-popup-content {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 8px 14px;
-  border-radius: 4px;
-  border-left: 3px solid #0e8a8a;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  background: rgba(42, 42, 42, 0.95) !important;
+  padding: 8px 14px !important;
+  border-radius: 4px !important;
+  border-left: 3px solid #2dd4a8 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  color: #e0e0e0 !important;
 }
 
 .geocoder-hint-popup .mapboxgl-popup-tip {
-  border-bottom-color: rgba(255, 255, 255, 0.95);
+  border-bottom-color: rgba(42, 42, 42, 0.95) !important;
 }
 
 /* ========================================
@@ -678,13 +659,6 @@ h3 {
     padding-top: 10px;
   }
 
-  .toggle-switch-label {
-    padding: 8px 10px;
-  }
-
-  .toggle-text {
-    font-size: 0.8em;
-  }
 
   .blue-acres-stats {
     font-size: 0.78em;
