@@ -528,7 +528,7 @@ h3 {
 .mapboxgl-popup-content {
   background: #1f1f1f !important;
   padding: 0 !important;
-  border-radius: 8px !important;
+  border-radius: 0px !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
   overflow: hidden;
 }
@@ -553,7 +553,7 @@ h3 {
 .mapboxgl-popup-close-button:hover {
   color: #e0e0e0 !important;
   background: rgba(255, 255, 255, 0.12) !important;
-  border-radius: 6px;
+  border-radius: 0px;
 }
 
 /* ========================================
