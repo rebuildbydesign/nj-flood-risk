@@ -871,7 +871,6 @@ map.on('load', () => {
 
     // Toggle Blue Acres visibility
     const blueAcresToggle = document.getElementById('toggle-blue-acres');
-    const blueAcresStatsEl = document.getElementById('blue-acres-stats');
 
     // Ensure Blue Acres layers render on top of displacement layers
     function ensureBlueAcresOnTop() {
@@ -898,21 +897,6 @@ map.on('load', () => {
 
             // Ensure BA layers render on top of displacement layers
             ensureBlueAcresOnTop();
-
-            // Hide finding card when BA is on
-            const findingCard = document.getElementById('finding-card');
-            if (findingCard && blueAcresVisible) findingCard.style.display = 'none';
-
-            // Update stats display
-            if (blueAcresVisible) {
-                blueAcresStatsEl.classList.remove('hidden');
-                blueAcresStatsEl.innerHTML = `
-                    Since 1987: <span class="stat-highlight">${blueAcresTotalCount.toLocaleString()}</span> parcels acquired statewide
-                    · <span class="stat-highlight">${blueAcresTotalAcres.toFixed(1)}</span> acres
-                `;
-            } else {
-                blueAcresStatsEl.classList.add('hidden');
-            }
         });
     }
 
