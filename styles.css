@@ -47,8 +47,27 @@ a:visited {
   color: #fff;
   padding: 15px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.25);
   z-index: 2;
+}
+
+#sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }
 
 .sidebar-title {
@@ -126,6 +145,11 @@ h3 {
   filter: brightness(1.1);
 }
 
+/* Native tooltip styling via title attribute — enhanced with CSS */
+.risk-buttons button[title] {
+  position: relative;
+}
+
 .risk-buttons button.active {
   border-color: #fff;
 }
@@ -174,7 +198,7 @@ h3 {
 
 .county-prompt {
   color: #888;
-  font-size: 1.006em;
+  font-size: 1em;
   font-style: italic;
   margin: 0;
 }
@@ -182,12 +206,12 @@ h3 {
 .county-display h4 {
   margin: 0 0 10px 0;
   color: #f7c320;
-  font-size: 1.15em;
+  font-size: 1.125em;
   font-weight: 600;
 }
 
 .county-display p {
-  font-size: 0.934em;
+  font-size: 0.9em;
   line-height: 1.5;
   margin: 6px 0;
   color: #e6e6e6;
@@ -215,7 +239,7 @@ h3 {
 
 /* Blue Acres stats box */
 .blue-acres-stats {
-  font-size: 0.82em;
+  font-size: 0.85em;
   color: #d1d5db;
   line-height: 1.5;
   padding: 8px 10px;
@@ -271,7 +295,7 @@ h3 {
   background: rgba(0, 0, 0, 0.9);
   color: #fff;
   padding: 20px 40px;
-  font-size: 1.38em;
+  font-size: 1.375em;
   font-weight: 600;
 }
 
@@ -289,7 +313,7 @@ h3 {
   background: rgba(0, 0, 0, 0.7);
   color: #fff;
   border: 1.5px solid rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  font-size: 0.875em;
   font-weight: 600;
   font-style: italic;
   font-family: Georgia, 'Times New Roman', serif;
@@ -404,7 +428,8 @@ h3 {
   right: 80px;
   top: 50%;
   transform: translateY(-50%);
-  width: 260px;
+  width: 280px;
+  font-size: 1.05em;
   background: rgba(0, 0, 0, 0.82);
   border-left: none;
   padding: 22px 20px 22px 28px; /* extra left padding for the dual bars */
@@ -442,17 +467,17 @@ h3 {
 }
 
 .finding-label {
-  font-size: 0.7em;
+  font-size: 0.9em;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: #dd4000;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .finding-text {
-  font-size: 1.05em;
-  line-height: 1.55;
+  font-size: 1em;
+  line-height: 1.45;
   color: #f0f0f0;
   margin: 0;
 }
@@ -472,25 +497,25 @@ h3 {
    CITY CALLOUT - "Closer Look" box below key finding
    ======================================== */
 .city-callout {
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .city-callout-label {
-  font-size: 0.7em;
+  font-size: 0.9em;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #e0e0e0;
+  letter-spacing: 0.1em;
+  color: #dd4000;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .city-callout-text {
-  font-size: 0.92em;
-  line-height: 1.5;
-  color: #c0c0c0;
-  margin: 0 0 10px 0;
+  font-size: 1em;
+  line-height: 1.45;
+  color: #fff;
+  margin: 0 0 8px 0;
 }
 
 .city-callout-text strong {
@@ -499,7 +524,7 @@ h3 {
 
 .city-callout-link {
   display: inline-block;
-  font-size: 0.88em;
+  font-size: 0.9em;
   font-weight: 600;
   color: #e0e0e0;
   text-decoration: none;
@@ -525,12 +550,21 @@ h3 {
 /* ========================================
    COUNTY CLICK POPUP (dark mode)
    ======================================== */
+.mapboxgl-popup {
+  max-width: none !important;
+  /* Keep popup within viewport edges */
+  max-height: 85vh;
+}
+
 .mapboxgl-popup-content {
   background: #1f1f1f !important;
   padding: 0 !important;
   border-radius: 0px !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5) !important;
   overflow: hidden;
+  /* Constrain to viewport */
+  max-height: 80vh;
+  max-width: calc(100vw - 340px); /* account for sidebar width + some margin */
 }
 
 .mapboxgl-popup-tip {
@@ -669,12 +703,12 @@ h3 {
   }
 
   .helper-text {
-    font-size: 0.805em;
+    font-size: 0.8em;
     margin: 2px 0 8px 0;
   }
 
   #methodology-link {
-    font-size: 0.805em;
+    font-size: 0.8em;
   }
 
   /* Step headers */
@@ -708,7 +742,7 @@ h3 {
 
 
   .blue-acres-stats {
-    font-size: 0.78em;
+    font-size: 0.8em;
     padding: 6px 8px;
   }
 
@@ -716,7 +750,7 @@ h3 {
   .howto-banner {
     width: 24px;
     height: 24px;
-    font-size: 12px;
+    font-size: 0.75em;
     bottom: 24px;
     right: 8px;
   }
@@ -725,11 +759,11 @@ h3 {
   .howto-content {
     max-width: 85vw;
     padding: 15px;
-    font-size: 0.978em;
+    font-size: 1em;
   }
 
   .howto-content h2 {
-    font-size: 1.265em;
+    font-size: 1.25em;
   }
 
   .howto-content ul {
@@ -751,6 +785,6 @@ h3 {
   }
 
   .sidebar-title {
-    font-size: 1.05em;
+    font-size: 1em;
   }
 }

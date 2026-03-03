@@ -31,45 +31,33 @@
     <!-- Header & Introduction -->
     <h1 class="sidebar-title">NEW JERSEY: FLOOD RISK = FINANCIAL RISK</h1>
     <p class="helper-text">
-      Rebuild by Design analyzed <strong>3.4 million properties</strong> across New Jersey to map where flood risk puts people, budgets, and critical public assets at greatest risk. Without government intervention, flood-prone residents face displacement and some with limited resources while municipalities lose the tax base that funds schools, roads, and everyday services.
+      <strong>3.4 million properties</strong> analyzed to map where flood risk threatens people, budgets, and public assets.
     </p>
-   <!-- <a href="#" id="methodology-link">View methodology >></a>
-    <br /><br />-->
-    
 
     <!-- Step 1: Risk Groups -->
-<h3>Step 1: Toggle Displacement Groups</h3>
-<p class="helper-text">
-  Click to view different displacement risk groups. Each property is classified by flood exposure and financial capacity.
-</p>
+    <h3>Step 1: Toggle Displacement Groups</h3>
+    <p class="helper-text">Toggle groups by flood exposure and financial capacity.</p>
 
-<div class="risk-buttons">
-  <button data-group="Crisis" style="background:#dd4000">CRISIS: High Flood Risk, Lower Income</button>
-  <button data-group="Emigrating" style="background:#f27407">EMIGRATING: High Flood Risk, Higher Income</button>
-  <button data-group="Destination" style="background:#f2a007">DESTINATION: Low Flood Risk, Lower Income</button>
-  <button data-group="Stable" style="background:#f7c320">STABLE: Low Flood Risk, Higher Income</button>
-</div>
-
-
+    <div class="risk-buttons">
+      <button data-group="Crisis" style="background:#dd4000" title="High flood risk + lower income — most vulnerable to forced displacement">HIGH FLOOD RISK, LOWER INCOME</button>
+      <button data-group="Emigrating" style="background:#f27407" title="High flood risk + higher income — able to relocate but still at risk">HIGH FLOOD RISK, HIGHER INCOME</button>
+      <button data-group="Destination" style="background:#f2a007" title="Low flood risk + lower income — potential destination for displaced residents">LOW FLOOD RISK, LOWER INCOME</button>
+      <button data-group="Stable" style="background:#f7c320" title="Low flood risk + higher income — least displacement pressure">LOW FLOOD RISK, HIGHER INCOME</button>
+    </div>
 
     <!-- Step 2: Search -->
     <h3>Step 2: Search for an Address</h3>
-    <p class="helper-text">
-      Search any New Jersey address to zoom to that location.
-    </p>
     <div id="geocoder-container"></div>
 
     <!-- Step 3: County Information -->
     <h3>Step 3: Explore County Data</h3>
-    <p class="helper-text">
-      Click any county to see how many residents face displacement and which critical public assets are in the floodplain today and by 2050.
-    </p>
+    <p class="helper-text">Click any county for displacement and infrastructure data.</p>
 
     <!-- Step 4: Blue Acres Buyouts -->
     <div id="blue-acres-section">
       <h3>Step 4: Blue Acres Buyouts</h3>
       <p class="helper-text">
-        NJ's <strong>Blue Acres</strong> program buys flood-prone homes and returns the land to nature.
+        Since 1987, NJ's <strong>Blue Acres</strong> program has purchased <strong>1,677</strong> flood-prone properties.
       </p>
       <div class="risk-buttons">
         <button id="blue-acres-pill" type="button" style="background:#0d9488">BLUE ACRES BUYOUTS</button>
@@ -107,7 +95,7 @@
 
       <!-- Closer Look: City-level cross-link -->
       <div id="city-callout" class="city-callout">
-        <div class="city-callout-label">CLOSER LOOK</div>
+        <div class="city-callout-label">CLOSER LOOK IN 8 CITIES</div>
         <p class="city-callout-text">
           We analyzed <strong>8 municipalities</strong> for a deeper dive into public assets at risk.
         </p>
