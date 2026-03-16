@@ -12,6 +12,7 @@ const riskColors = {
 // --- Dynamic zoom/center ---
 // Always center on NJ geographically. On desktop, Mapbox padding (set after load)
 // visually shifts NJ left to clear the finding card — without moving the geographic center.
+const isIframe = window.self !== window.top;
 let mapCenter = [-74.6, 40.15205];
 let mapZoom = 7.5;
 
@@ -19,6 +20,9 @@ if (window.innerWidth <= 600) {
     // Mobile: finding card is hidden, keep NJ centered
     mapCenter = [-74.3, 39.9];
     mapZoom = 6.65;
+} else if (isIframe) {
+    // Iframe/modal embed: container is smaller, bump zoom to fill
+    mapZoom = 8.2;
 }
 
 // --- Initialize Mapbox Map with LIGHT basemap ---
@@ -935,12 +939,9 @@ if (howtoModal) {
     });
 }
 
-// --- Methodology Link Logic ---
-const methodologyLink = document.getElementById('methodology-link');
-
-if (methodologyLink) {
-    methodologyLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.open('https://rebuildbydesign.org/nj-flood-risk', '_blank');
-    });
-}
+// --- Methodology modal: ESC key support ---
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && howtoModal && !howtoModal.classList.contains('hidden')) {
+        howtoModal.classList.add('hidden');
+    }
+});
