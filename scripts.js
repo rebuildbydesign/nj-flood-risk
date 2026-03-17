@@ -16,13 +16,14 @@ const isIframe = window.self !== window.top;
 let mapCenter = [-74.6, 40.15205];
 let mapZoom = 7.5;
 
-if (window.innerWidth <= 600) {
-    // Mobile: finding card is hidden, keep NJ centered
+if (window.innerWidth <= 600 && !isIframe) {
+    // Mobile (standalone): finding card is hidden, keep NJ centered
     mapCenter = [-74.3, 39.9];
     mapZoom = 6.65;
 } else if (isIframe) {
-    // Iframe/modal embed: container is smaller, bump zoom to fill
-    mapZoom = 8.2;
+    // Iframe/modal embed: center on NJ without sidebar offset, show full state
+    mapCenter = [-74.4, 40.0];
+    mapZoom = 7.7;
 }
 
 // --- Initialize Mapbox Map with LIGHT basemap ---
@@ -431,9 +432,9 @@ map.on('load', () => {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) loadingEl.style.display = 'none';
 
-    // On desktop, use Mapbox padding to visually shift NJ left, clearing the finding card.
+    // On desktop (not iframe), use Mapbox padding to visually shift NJ left, clearing the finding card.
     // This is the correct approach — keeps NJ geographically centered, no broken coordinates.
-    if (window.innerWidth > 1024) {
+    if (window.innerWidth > 1024 && !isIframe) {
         map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 410 }, duration: 0 });
     }
 
@@ -449,7 +450,7 @@ map.on('load', () => {
             type: 'fill',
             source: layer.id,
             'source-layer': 'parcels',
-            minzoom: 7.5,
+            minzoom: 7,
             paint: { 
                 'fill-color': layer.color, 
                 'fill-opacity': 0.9 
@@ -461,7 +462,7 @@ map.on('load', () => {
             type: 'line',
             source: layer.id,
             'source-layer': 'parcels',
-            minzoom: 7.5,
+            minzoom: 7,
             paint: { 
                 'line-color': '#333', 
                 'line-width': 0.2 
@@ -654,14 +655,17 @@ map.on('load', () => {
     });
 
     // After geocoder result: fly with padding so marker lands at visual center,
-    // hide the finding card, and show a county hint popup
-    let geocoderHint = null;
+    // hide the finding card, and auto-open the county popup to the right of the pin
+    let geocoderCountyPopup = null;
     geocoder.on('result', (e) => {
         const coords = e.result.center;
         const findingCard = document.getElementById('finding-card');
 
         // Hide finding card while a searched location is active
         if (findingCard) findingCard.style.display = 'none';
+
+        // Remove any previous geocoder county popup
+        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
 
         // Fly to result with the same right padding so the pin sits at visual center
         map.flyTo({
@@ -672,36 +676,47 @@ map.on('load', () => {
             curve: 1
         });
 
-        // Remove any previous hint
-        if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
+        // After fly animation completes, find the county and auto-open its popup
+        map.once('moveend', () => {
+            // Query the county-fills layer at the searched point
+            const point = map.project(coords);
+            const features = map.queryRenderedFeatures(point, { layers: ['county-fills'] });
 
-        // Show hint popup below the marker
-        geocoderHint = new mapboxgl.Popup({
-            closeButton: true,
-            closeOnClick: false,
-            offset: [0, 12],
-            anchor: 'top',
-            className: 'geocoder-hint-popup'
-        })
-        .setLngLat(coords)
-        .setHTML(`<span style="font-size:0.85em;color:#e0e0e0;font-weight:500;">Click on a county to explore flood risk & infrastructure data</span>`)
-        .addTo(map);
+            if (features && features.length > 0) {
+                const feature = features[0];
 
-        // Auto-dismiss hint after 6 seconds
-        setTimeout(() => {
-            if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
-        }, 6000);
+                // Position the popup to the right of the pin using anchor: 'left'
+                // This makes the popup body appear to the right of the coordinates
+                geocoderCountyPopup = new mapboxgl.Popup({
+                    closeButton: true,
+                    maxWidth: "750px",
+                    anchor: 'left',
+                    offset: [25, 0] // 25px gap to the right of the pin
+                })
+                .setLngLat(coords)
+                .setHTML(countyPopupHTML(feature.properties))
+                .addTo(map);
+
+                // Restore the finding card when the popup is closed
+                geocoderCountyPopup.on('close', () => {
+                    if (findingCard) findingCard.style.display = '';
+                    geocoderCountyPopup = null;
+                });
+            }
+        });
     });
 
     // Restore finding card when geocoder is cleared
     geocoder.on('clear', () => {
         const findingCard = document.getElementById('finding-card');
         if (findingCard) findingCard.style.display = '';
+        // Also remove geocoder county popup if open
+        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
     });
 
-    // Clear hint when user clicks a county
+    // Close geocoder county popup when user clicks a different county
     map.on('click', 'county-fills', () => {
-        if (geocoderHint) { geocoderHint.remove(); geocoderHint = null; }
+        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
     });
 
     // Mount geocoder directly into the sidebar Step 2 container

@@ -672,20 +672,9 @@ table.method-sources td:last-child {
 }
 
 /* ========================================
-   GEOCODER HINT POPUP (after address search)
+   GEOCODER COUNTY POPUP - anchored left of pin (appears to right)
+   Popup tip points left toward the pin
    ======================================== */
-.geocoder-hint-popup .mapboxgl-popup-content {
-  background: rgba(42, 42, 42, 0.95) !important;
-  padding: 8px 14px !important;
-  border-radius: 4px !important;
-  border-left: 3px solid #2dd4a8 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
-  color: #e0e0e0 !important;
-}
-
-.geocoder-hint-popup .mapboxgl-popup-tip {
-  border-bottom-color: rgba(42, 42, 42, 0.95) !important;
-}
 
 /* ========================================
    GEOCODER CUSTOMIZATION
