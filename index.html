@@ -26,8 +26,14 @@
   <!-- ========================================
        SIDEBAR - Left panel with controls
        ======================================== -->
-  <div id="sidebar">
-    
+  <div id="sidebar" class="collapsed">
+
+    <!-- Mobile toggle handle -->
+    <div id="sidebar-toggle" class="sidebar-toggle">
+      <span class="sidebar-toggle-arrow">▲</span>
+      <span class="sidebar-toggle-label">Click to Explore Map Controls</span>
+    </div>
+
     <!-- Header & Introduction -->
     <h1 class="sidebar-title">NEW JERSEY: FLOOD RISK = FINANCIAL RISK</h1>
     <p class="helper-text">
@@ -103,6 +109,19 @@
         </a>
       </div>
     </div>
+  </div>
+
+  <!-- MOBILE COUNTY POPUP (bottom sheet) -->
+  <div id="mobile-county-sheet" class="mobile-county-sheet hidden">
+    <div class="mobile-county-header">
+      <div class="mobile-county-title" id="mobile-county-title"></div>
+      <button id="mobile-county-close" class="mobile-county-close">&times;</button>
+    </div>
+    <div class="mobile-county-tabs">
+      <button class="mobile-tab active" data-tab="displacement">Displacement</button>
+      <button class="mobile-tab" data-tab="assets">Public Assets</button>
+    </div>
+    <div class="mobile-county-body" id="mobile-county-body"></div>
   </div>
 
   <!-- METHODOLOGY BANNER -->

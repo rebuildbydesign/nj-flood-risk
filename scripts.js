@@ -515,26 +515,30 @@ map.on('load', () => {
                 }
             });
 
-            // Popup on click (V2 style)
+            // Popup on click (V2 style) — desktop vs mobile
             map.on('click', 'county-fills', (e) => {
                 const feature = e.features[0];
                 const findingCard = document.getElementById('finding-card');
 
-                // Hide the finding card while the county popup is open
-                if (findingCard) findingCard.style.display = 'none';
+                if (window.innerWidth <= 1024) {
+                    // MOBILE/TABLET: show bottom sheet instead of Mapbox popup
+                    openMobileCountySheet(feature.properties);
+                } else {
+                    // DESKTOP: classic Mapbox popup
+                    if (findingCard) findingCard.style.display = 'none';
 
-                const popup = new mapboxgl.Popup({
-                    closeButton: true,
-                    maxWidth: "750px"
-                })
-                    .setLngLat(e.lngLat)
-                    .setHTML(countyPopupHTML(feature.properties))
-                    .addTo(map);
+                    const popup = new mapboxgl.Popup({
+                        closeButton: true,
+                        maxWidth: "750px"
+                    })
+                        .setLngLat(e.lngLat)
+                        .setHTML(countyPopupHTML(feature.properties))
+                        .addTo(map);
 
-                // Restore the finding card when the popup is closed
-                popup.on('close', () => {
-                    if (findingCard) findingCard.style.display = '';
-                });
+                    popup.on('close', () => {
+                        if (findingCard) findingCard.style.display = '';
+                    });
+                }
             });
 
             // Hover tooltip for counties
@@ -685,23 +689,26 @@ map.on('load', () => {
             if (features && features.length > 0) {
                 const feature = features[0];
 
-                // Position the popup to the right of the pin using anchor: 'left'
-                // This makes the popup body appear to the right of the coordinates
-                geocoderCountyPopup = new mapboxgl.Popup({
-                    closeButton: true,
-                    maxWidth: "750px",
-                    anchor: 'left',
-                    offset: [25, 0] // 25px gap to the right of the pin
-                })
-                .setLngLat(coords)
-                .setHTML(countyPopupHTML(feature.properties))
-                .addTo(map);
+                if (window.innerWidth <= 1024) {
+                    // MOBILE/TABLET: use bottom sheet
+                    openMobileCountySheet(feature.properties);
+                } else {
+                    // DESKTOP: popup to the right of the pin
+                    geocoderCountyPopup = new mapboxgl.Popup({
+                        closeButton: true,
+                        maxWidth: "750px",
+                        anchor: 'left',
+                        offset: [25, 0]
+                    })
+                    .setLngLat(coords)
+                    .setHTML(countyPopupHTML(feature.properties))
+                    .addTo(map);
 
-                // Restore the finding card when the popup is closed
-                geocoderCountyPopup.on('close', () => {
-                    if (findingCard) findingCard.style.display = '';
-                    geocoderCountyPopup = null;
-                });
+                    geocoderCountyPopup.on('close', () => {
+                        if (findingCard) findingCard.style.display = '';
+                        geocoderCountyPopup = null;
+                    });
+                }
             }
         });
     });
@@ -712,6 +719,8 @@ map.on('load', () => {
         if (findingCard) findingCard.style.display = '';
         // Also remove geocoder county popup if open
         if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
+        // Close mobile sheet if open
+        if (typeof closeMobileCountySheet === 'function') closeMobileCountySheet();
     });
 
     // Close geocoder county popup when user clicks a different county
@@ -959,4 +968,241 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && howtoModal && !howtoModal.classList.contains('hidden')) {
         howtoModal.classList.add('hidden');
     }
+});
+
+// ======================================
+// MOBILE / TABLET: Sidebar Toggle
+// ======================================
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.getElementById('sidebar');
+
+if (sidebarToggle && sidebar) {
+    const toggleLabel = sidebarToggle.querySelector('.sidebar-toggle-label');
+    sidebarToggle.addEventListener('click', () => {
+        if (sidebar.classList.contains('collapsed')) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('expanded');
+            if (toggleLabel) toggleLabel.textContent = 'Click to Hide Map Controls';
+        } else {
+            sidebar.classList.remove('expanded');
+            sidebar.classList.add('collapsed');
+            if (toggleLabel) toggleLabel.textContent = 'Click to Explore Map Controls';
+        }
+    });
+}
+
+// ======================================
+// MOBILE / TABLET: County Bottom Sheet
+// ======================================
+
+// Build the "Displacement" tab content HTML
+function mobileDisplacementHTML(props) {
+    const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    const baStats = blueAcresCountyStats[countyNameTitleCase];
+
+    const riskBar = `
+        <div style="display:flex;height:14px;overflow:hidden;margin:6px 0 10px 0;box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+            <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
+            <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
+            <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
+            <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
+        </div>
+    `;
+
+    const groups = [
+        { label: 'High Risk, Lower Inc.', color: riskColors.Crisis, count: props.CRISIS_PARCELS, pct: props.CRISIS_PARCELS_PCT },
+        { label: 'High Risk, Higher Inc.', color: riskColors.Emigrating, count: props.EMIGRATING_PARCELS, pct: props.EMIGRATING_PARCELS_PCT },
+        { label: 'Low Risk, Lower Inc.', color: riskColors.Destination, count: props.DESTINATION_PARCELS, pct: props.DESTINATION_PARCELS_PCT },
+        { label: 'Low Risk, Higher Inc.', color: riskColors.Stable, count: props.STABLE_PARCELS, pct: props.STABLE_PARCELS_PCT }
+    ];
+
+    const groupRows = groups.map(g => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2a2a2a;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span style="display:inline-block;width:10px;height:10px;background:${g.color};flex-shrink:0;"></span>
+                <span style="color:${g.color};font-weight:600;font-size:0.85em;">${g.label}</span>
+            </div>
+            <span style="color:#b0b0b0;font-size:0.85em;font-weight:600;">${formatNumber(g.count)} (${(g.pct * 100).toFixed(1)}%)</span>
+        </div>
+    `).join('');
+
+    const baHTML = baStats ? `
+        <div style="background:#1a332e;border-left:3px solid #2dd4a8;padding:8px 10px;margin-top:12px;">
+            <div style="font-weight:600;font-size:0.78em;color:#2dd4a8;letter-spacing:0.3px;text-transform:uppercase;margin-bottom:2px;">Blue Acres Buyouts</div>
+            <div style="font-size:0.9em;color:#e0e0e0;font-weight:700;">${baStats.count.toLocaleString()} parcels · ${baStats.acres.toFixed(1)} acres</div>
+        </div>
+    ` : '';
+
+    return `
+        <div style="font-family:Arial,sans-serif;color:#e0e0e0;">
+            <!-- Summary -->
+            <div style="font-size:0.9em;color:#b0b0b0;margin-bottom:10px;">
+                ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}%</span> by 2050
+            </div>
+
+            <!-- Economic Risk -->
+            <div style="background:#2a2a2a;padding:8px 10px;margin-bottom:10px;border:1px solid #3a3a3a;">
+                <div style="font-weight:600;font-size:0.78em;color:#888;letter-spacing:0.3px;text-transform:uppercase;margin-bottom:6px;">Economic Risk</div>
+                <div style="display:flex;justify-content:space-between;font-size:0.85em;color:#888;font-weight:600;margin-bottom:2px;">
+                    <span></span><span>2025</span><span style="margin-left:4px;">2050</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+                    <span style="color:#b0b0b0;font-size:0.9em;">Market Value</span>
+                    <div>
+                        <span style="color:#f87171;font-weight:700;font-size:0.95em;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</span>
+                        <span style="color:#f87171;font-weight:700;font-size:0.95em;margin-left:8px;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</span>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+                    <span style="color:#b0b0b0;font-size:0.9em;">Tax Revenue</span>
+                    <div>
+                        <span style="color:#f87171;font-weight:700;font-size:0.95em;">$${formatNumber(props.TAX_RISK_2024)}</span>
+                        <span style="color:#f87171;font-weight:700;font-size:0.95em;margin-left:8px;">$${formatNumber(props.TAX_RISK_2050)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Displacement Risk -->
+            <div style="font-weight:600;font-size:0.9em;color:#e0e0e0;margin-bottom:2px;">Displacement Risk</div>
+            ${riskBar}
+            ${groupRows}
+            ${baHTML}
+        </div>
+    `;
+}
+
+// Build the "Public Assets" tab content HTML
+function mobileAssetsHTML(props) {
+    const fmtComma = n => Number(n || 0).toLocaleString('en-US');
+
+    const assets = [
+        { label: '✈️ Airports', total: props.TOTAL_AIRPORTS, c25: props.AIRPORTS_2025, p25: props.PCT_AIRPORTS_2025, c50: props.AIRPORTS_2050, p50: props.PCT_AIRPORTS_2050 },
+        { label: '🏥 Hospitals', total: props.TOTAL_HOSPITALS, c25: props.HOSPITALS_2025, p25: props.PCT_HOSPITALS_2025, c50: props.HOSPITAL_2050, p50: props.PCT_HOSPITALS_2050 },
+        { label: '📚 Libraries', total: props.TOTAL_LIBRARY, c25: props.LIBRARY_2025, p25: props.PCT_LIBRARY_2025, c50: props.LIBRARY_2050, p50: props.PCT_LIBRARY_2050 },
+        { label: '🌳 Parks', total: props.TOTAL_PARKS, c25: props.PARKS_2025, p25: props.PCT_PARKS_2025, c50: props.PARKS_2050, p50: props.PCT_PARKS_2050 },
+        { label: '⚡ Power Plants', total: props.TOTAL_POWERPLANTS, c25: props.POWERPLANTS_2025, p25: props.PCT_POWERPLANTS_2025, c50: props.POWERPLANTS_2050, p50: props.PCT_POWERPLANTS_2050 },
+        { label: '🏫 Schools', total: props.TOTAL_SCHOOL, c25: props.SCHOOL_2025, p25: props.PCT_SCHOOL_2025, c50: props.SCHOOL_2050, p50: props.PCT_SCHOOL_2050 },
+        { label: '⚠️ Contaminated Sites', total: props.TOTAL_KNOWN_CONTAMINATED_SITE, c25: props.KNOWN_CONTAMINATED_SITE_2025, p25: props.PCT_KNOWN_CONTAMINATED_SITE_2025, c50: props.KNOWN_CONTAMINATED_SITE_2050, p50: props.PCT_KNOWN_CONTAMINATED_SITE_2050 },
+        { label: '☢️ Solid/Hazardous Waste', total: props.TOTAL_SOLID_HAZARD_WASTE, c25: props.SOLID_HAZARD_WASTE_2025, p25: props.PCT_SOLID_HAZARD_WASTE_2025, c50: props.SOLID_HAZARD_WASTE_2050, p50: props.PCT_SOLID_HAZARD_WASTE_2050 },
+        { label: '🗑️ Landfills', total: props.TOTAL_SOLID_WASTE_LANDFILL, c25: props.SOLID_WASTE_LANDFILL_2025, p25: props.PCT_SOLID_WASTE_LANDFILL_2025, c50: props.SOLID_WASTE_LANDFILL_2050, p50: props.PCT_SOLID_WASTE_LANDFILL_2050 },
+        { label: '☣️ Superfund Sites', total: props.TOTAL_SUPERFUND, c25: props.SUPERFUND_2025, p25: props.PCT_SUPERFUND_2025, c50: props.SUPERFUND_2050, p50: props.PCT_SUPERFUND_2050 },
+        { label: '💧 Wastewater', total: props.TOTAL_WASTEWATER_TREATMENT, c25: props.WASTEWATER_TREATMENT_2025, p25: props.PCT_WASTEWATER_TREATMENT_2025, c50: props.WASTEWATER_TREATMENT_2050, p50: props.PCT_WASTEWATER_TREATMENT_2050 }
+    ];
+
+    const atRisk = assets.filter(a => {
+        const hasTotal = a.total && Number(a.total) > 0;
+        const has25 = a.c25 && Number(a.c25) > 0;
+        const has50 = a.c50 && Number(a.c50) > 0;
+        return hasTotal && (has25 || has50);
+    }).sort((a, b) => (Number(b.p50) || 0) - (Number(a.p50) || 0));
+
+    const totalAssets = assets.reduce((s, a) => s + (Number(a.total) || 0), 0);
+    const risk25 = assets.reduce((s, a) => s + (Number(a.c25) || 0), 0);
+    const risk50 = assets.reduce((s, a) => s + (Number(a.c50) || 0), 0);
+    const pct25 = totalAssets > 0 ? ((risk25 / totalAssets) * 100).toFixed(1) : 0;
+    const pct50 = totalAssets > 0 ? ((risk50 / totalAssets) * 100).toFixed(1) : 0;
+
+    function assetRow(a) {
+        let p25 = Math.max(0, Math.min(Number(a.p25) || 0, 100));
+        let p50 = Math.max(0, Math.min(Number(a.p50) || 0, 100));
+        return `
+            <div style="margin-bottom:8px;padding:6px 8px;background:#2a2a2a;border:1px solid #3a3a3a;">
+                <div style="font-size:0.88em;font-weight:600;color:#e0e0e0;margin-bottom:4px;">${a.label}</div>
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+                    <span style="font-size:0.8em;color:#888;width:28px;text-align:right;">2025</span>
+                    <div style="flex:1;height:7px;background:#3a3a3a;overflow:hidden;">
+                        <div style="background:#a5d5f1;width:${p25}%;height:100%;min-width:2px;"></div>
+                    </div>
+                    <span style="font-size:0.8em;color:#b0b0b0;width:50px;text-align:right;font-weight:600;">${fmtComma(a.c25)}/${fmtComma(a.total)}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;">
+                    <span style="font-size:0.8em;color:#888;width:28px;text-align:right;">2050</span>
+                    <div style="flex:1;height:7px;background:#3a3a3a;overflow:hidden;">
+                        <div style="background:#3a7fc3;width:${p50}%;height:100%;min-width:2px;"></div>
+                    </div>
+                    <span style="font-size:0.8em;color:#b0b0b0;width:50px;text-align:right;font-weight:600;">${fmtComma(a.c50)}/${fmtComma(a.total)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    const assetRows = atRisk.length > 0
+        ? atRisk.map(assetRow).join('')
+        : '<div style="font-size:0.9em;color:#888;font-style:italic;">No critical infrastructure at risk</div>';
+
+    const featuredCity = countyToCity[props.COUNTY];
+    const cityLink = featuredCity ? `
+        <a href="https://rebuildbydesign.github.io/nj-flood-risk-city/?city=${encodeURIComponent(featuredCity.key)}" target="_blank"
+           style="display:block;text-align:center;font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;padding:8px 12px;background:#1a1a1a;border:1px solid #888;margin-top:12px;text-transform:uppercase;letter-spacing:0.3px;">
+            Explore ${featuredCity.name} Data →
+        </a>` : '';
+
+    return `
+        <div style="font-family:Arial,sans-serif;color:#e0e0e0;">
+            <div style="font-size:0.9em;color:#b0b0b0;margin-bottom:10px;">
+                ${fmtComma(totalAssets)} assets · <span style="font-weight:700;color:#f87171;">${pct25}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${pct50}%</span> by 2050
+            </div>
+            ${assetRows}
+            <div style="font-size:0.75em;color:#888;font-style:italic;margin-top:6px;">* 100-ft buffer analysis intersected with 2025 & 2050 floodplains</div>
+            ${cityLink}
+        </div>
+    `;
+}
+
+// Store current county props for tab switching
+let _mobileCountyProps = null;
+
+function openMobileCountySheet(props) {
+    _mobileCountyProps = props;
+    const sheet = document.getElementById('mobile-county-sheet');
+    const title = document.getElementById('mobile-county-title');
+    const body = document.getElementById('mobile-county-body');
+
+    // Collapse sidebar if open
+    if (sidebar && sidebar.classList.contains('expanded')) {
+        sidebar.classList.remove('expanded');
+        sidebar.classList.add('collapsed');
+    }
+
+    // Set title
+    const countyName = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    title.textContent = countyName + ' County';
+
+    // Reset to Displacement tab
+    document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.mobile-tab[data-tab="displacement"]').classList.add('active');
+    body.innerHTML = mobileDisplacementHTML(props);
+
+    // Show sheet
+    sheet.classList.remove('hidden');
+}
+
+function closeMobileCountySheet() {
+    const sheet = document.getElementById('mobile-county-sheet');
+    sheet.classList.add('hidden');
+    _mobileCountyProps = null;
+}
+
+// Close button
+const mobileCountyClose = document.getElementById('mobile-county-close');
+if (mobileCountyClose) {
+    mobileCountyClose.addEventListener('click', closeMobileCountySheet);
+}
+
+// Tab switching
+document.querySelectorAll('.mobile-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (!_mobileCountyProps) return;
+        const tabName = tab.getAttribute('data-tab');
+        const body = document.getElementById('mobile-county-body');
+
+        document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        if (tabName === 'displacement') {
+            body.innerHTML = mobileDisplacementHTML(_mobileCountyProps);
+        } else {
+            body.innerHTML = mobileAssetsHTML(_mobileCountyProps);
+        }
+    });
 });

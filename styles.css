@@ -720,9 +720,36 @@ table.method-sources td:last-child {
 }
 
 /* ========================================
-   MOBILE RESPONSIVE - Phones (< 768px)
+   SIDEBAR TOGGLE HANDLE (mobile/tablet only)
    ======================================== */
-@media screen and (max-width: 768px) {
+.sidebar-toggle {
+  display: none; /* hidden on desktop */
+}
+
+/* ========================================
+   MOBILE COUNTY BOTTOM SHEET
+   ======================================== */
+.mobile-county-sheet {
+  display: none; /* only shown on mobile/tablet via JS */
+}
+
+/* ========================================
+   TABLET (769px - 1024px)
+   ======================================== */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #sidebar {
+    width: 280px;
+  }
+
+  .sidebar-title {
+    font-size: 1em;
+  }
+}
+
+/* ========================================
+   MOBILE + TABLET RESPONSIVE (≤ 1024px)
+   ======================================== */
+@media screen and (max-width: 1024px) {
   html {
     font-size: 14px;
   }
@@ -731,20 +758,86 @@ table.method-sources td:last-child {
     flex-direction: column;
   }
 
-  /* Sidebar becomes bottom drawer */
+  /* ---- SIDEBAR: collapsible bottom drawer ---- */
   #sidebar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 50vh;
-    max-height: 50vh;
-    padding: 10px 12px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    max-height: 55vh;
+    padding: 0 20px 18px 20px;
+    box-sizing: border-box;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
     border-top: 2px solid #f7c320;
+    z-index: 20;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #444 transparent;
   }
 
-  /* Map takes full screen */
+  /* Collapsed state: slide down, only toggle bar visible */
+  #sidebar.collapsed {
+    transform: translateY(calc(100% - 48px));
+  }
+
+  /* Expanded state */
+  #sidebar.expanded {
+    transform: translateY(0);
+  }
+
+  /* ---- Toggle handle ---- */
+  .sidebar-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0 6px 0;
+    cursor: pointer;
+    position: sticky;
+    top: 0;
+    background: #000;
+    z-index: 5;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sidebar-toggle-arrow {
+    font-size: 1em;
+    color: #999;
+    transition: color 0.2s, transform 0.3s ease;
+    line-height: 1;
+  }
+
+  .sidebar-toggle:hover .sidebar-toggle-arrow,
+  .sidebar-toggle:active .sidebar-toggle-arrow {
+    color: #f7c320;
+  }
+
+  /* Arrow points up when collapsed (inviting user to pull up) */
+  #sidebar.collapsed .sidebar-toggle-arrow {
+    transform: rotate(0deg);
+  }
+
+  /* Arrow points down when expanded (inviting user to close) */
+  #sidebar.expanded .sidebar-toggle-arrow {
+    transform: rotate(180deg);
+  }
+
+  .sidebar-toggle-label {
+    font-size: 0.78em;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .sidebar-toggle:hover .sidebar-toggle-label {
+    color: #f7c320;
+  }
+
+  /* Map takes full viewport */
   #map {
     width: 100%;
     height: 100vh;
@@ -762,10 +855,6 @@ table.method-sources td:last-child {
     margin: 2px 0 8px 0;
   }
 
-  #methodology-link {
-    font-size: 0.8em;
-  }
-
   /* Step headers */
   h3 {
     font-size: 0.9em;
@@ -778,16 +867,11 @@ table.method-sources td:last-child {
     margin-bottom: 10px;
   }
 
-  .risk-row {
-    gap: 4px;
-  }
-
   .risk-buttons button,
   .toggle-all {
     font-size: 0.86em;
     padding: 8px 6px;
   }
-
 
   /* Blue Acres section */
   #blue-acres-section {
@@ -795,51 +879,124 @@ table.method-sources td:last-child {
     padding-top: 10px;
   }
 
-
   .blue-acres-stats {
     font-size: 0.8em;
     padding: 6px 8px;
   }
 
-  /* Help banner — slightly smaller on mobile */
+  /* ---- Methodology banner: keep above collapsed sidebar ---- */
   .howto-banner {
     width: 24px;
     height: 24px;
     font-size: 0.75em;
-    bottom: 24px;
+    bottom: 60px;
     right: 8px;
   }
 
   /* Help modal */
   .howto-content {
-    max-width: 85vw;
+    max-width: 90vw;
+    max-height: 80vh;
     padding: 15px;
     font-size: 1em;
   }
 
-  .howto-content h2 {
-    font-size: 1.25em;
+  /* ---- County popup max-width for mobile (popup is hidden via JS branching,
+         but this ensures any accidental popups don't break layout) ---- */
+  .mapboxgl-popup-content {
+    max-width: 90vw !important;
   }
 
-  .howto-content ul {
-    padding-left: 16px;
+  /* ---- MOBILE COUNTY BOTTOM SHEET ---- */
+  .mobile-county-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 70vh;
+    background: #1f1f1f;
+    z-index: 30;
+    border-top: 3px solid #f7c320;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.7);
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .howto-content li {
-    margin-bottom: 8px;
-  }
-}
-
-
-/* ========================================
-   TABLET (769px - 1024px)
-   ======================================== */
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  #sidebar {
-    width: 280px;
+  .mobile-county-sheet.hidden {
+    transform: translateY(100%);
+    pointer-events: none;
   }
 
-  .sidebar-title {
-    font-size: 1em;
+  .mobile-county-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 6px 14px;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .mobile-county-title {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #e0e0e0;
+  }
+
+  .mobile-county-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.6em;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .mobile-county-close:hover {
+    color: #fff;
+  }
+
+  /* Tabs */
+  .mobile-county-tabs {
+    display: flex;
+    flex-shrink: 0;
+    border-bottom: 1px solid #333;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    background: #1a1a1a;
+    border: none;
+    color: #888;
+    font-size: 0.85em;
+    font-weight: 600;
+    padding: 10px 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: color 0.2s, border-color 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .mobile-tab.active {
+    color: #f7c320;
+    border-bottom-color: #f7c320;
+    background: #252525;
+  }
+
+  .mobile-tab:hover {
+    color: #ccc;
+  }
+
+  /* Scrollable body */
+  .mobile-county-body {
+    overflow-y: auto;
+    padding: 12px 14px;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: #555 transparent;
+    -webkit-overflow-scrolling: touch;
   }
 }
