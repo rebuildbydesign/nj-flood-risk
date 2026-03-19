@@ -110,13 +110,19 @@ function countyPopupHTML(props) {
         </div>
     `;
 
-    // Displacement parcels bar
+    // Population-based displacement bar
+    const totalPop = Number(props.TOTAL_POPULATION) || 1;
+    const crisisPopPct = (Number(props.CRISIS_POPULATION) / totalPop * 100);
+    const emigratingPopPct = (Number(props.EMIGRATING_POPULATION) / totalPop * 100);
+    const destinationPopPct = (Number(props.DESTINATION_POPULATION) / totalPop * 100);
+    const stablePopPct = (Number(props.STABLE_POPULATION) / totalPop * 100);
+
     const riskBar = `
         <div style="display:flex;height:18px;border-radius:0;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">
-            <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
-            <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
-            <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
-            <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
+            <div style="width:${crisisPopPct.toFixed(0)}%;background:${riskColors.Crisis};"></div>
+            <div style="width:${emigratingPopPct.toFixed(0)}%;background:${riskColors.Emigrating};"></div>
+            <div style="width:${destinationPopPct.toFixed(0)}%;background:${riskColors.Destination};"></div>
+            <div style="width:${stablePopPct.toFixed(0)}%;background:${riskColors.Stable};"></div>
         </div>
     `;
 
@@ -325,7 +331,7 @@ function countyPopupHTML(props) {
         </a>` : '';
 
     return `
-        <div style="display:flex;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;width:700px;max-width:90vw;background:#1f1f1f;border-radius:0;overflow:hidden;max-height:80vh;">
+        <div style="display:flex;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:14px;width:740px;max-width:90vw;background:#1f1f1f;border-radius:0;overflow:hidden;max-height:80vh;">
 
             <!-- LEFT PANEL -->
             <div style="background:#2a2a2a;color:#e0e0e0;width:250px;min-width:250px;padding:12px 12px;display:flex;flex-direction:column;border-right:2px solid #3a3a3a;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#555 transparent;">
@@ -333,7 +339,7 @@ function countyPopupHTML(props) {
                 <div style="border-left:4px solid #e0e0e0;padding-left:10px;margin-bottom:8px;">
                     <div style="font-weight:700;font-size:1.4em;color:#e0e0e0;line-height:1.2;margin-bottom:2px;">${props.COUNTY} COUNTY</div>
                     <div style="font-size:0.9em;color:#b0b0b0;line-height:1.35;">
-                        ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}%</span> by 2050
+                        ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#f87171;">${Number(props.PCT_PARCELS_RISK_2024).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${Number(props.PCT_PARCELS_RISK_2050).toFixed(1)}%</span> by 2050
                     </div>
                 </div>
 
@@ -362,11 +368,12 @@ function countyPopupHTML(props) {
                 <!-- Displacement Risk -->
                 <div style="margin-bottom:8px;">
                     <div style="font-weight:600;font-size:0.9em;margin-bottom:3px;color:#e0e0e0;">Displacement Risk</div>
+                    <div style="font-size:0.8em;color:#888888;margin-bottom:4px;">${formatNumber(props.TOTAL_POPULATION)} people</div>
                     ${riskBar}
                     <table style="width:100%;border-collapse:collapse;">
                         <tr>
                             <td style="padding:0 0 2px 0;font-size:0.85em;color:#888888;font-weight:600;">Group</td>
-                            <td style="padding:0 0 2px 0;text-align:right;font-size:0.85em;color:#888888;font-weight:600;">Parcels</td>
+                            <td style="padding:0 0 2px 0;text-align:right;font-size:0.85em;color:#888888;font-weight:600;">People</td>
                             <td style="padding:0 0 2px 4px;text-align:right;font-size:0.85em;color:#888888;font-weight:600;">%</td>
                         </tr>
                         <tr>
@@ -374,32 +381,32 @@ function countyPopupHTML(props) {
                                 <span style="display:inline-block;width:8px;height:8px;background:${riskColors.Crisis};flex-shrink:0;"></span>
                                 <span style="color:${riskColors.Crisis};font-weight:600;font-size:0.85em;">High Risk, Lower Inc.</span>
                             </td>
-                            <td style="padding:3px 0;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">${formatNumber(props.CRISIS_PARCELS)}</td>
-                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">${(props.CRISIS_PARCELS_PCT * 100).toFixed(1)}%</td>
+                            <td style="padding:3px 0;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">${formatNumber(props.CRISIS_POPULATION)}</td>
+                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Crisis};font-weight:600;font-size:0.9em;">${crisisPopPct.toFixed(1)}%</td>
                         </tr>
                         <tr>
                             <td style="padding:3px 0;display:flex;align-items:center;gap:4px;">
                                 <span style="display:inline-block;width:8px;height:8px;background:${riskColors.Emigrating};flex-shrink:0;"></span>
                                 <span style="color:${riskColors.Emigrating};font-weight:600;font-size:0.85em;">High Risk, Higher Inc.</span>
                             </td>
-                            <td style="padding:3px 0;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">${formatNumber(props.EMIGRATING_PARCELS)}</td>
-                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(1)}%</td>
+                            <td style="padding:3px 0;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">${formatNumber(props.EMIGRATING_POPULATION)}</td>
+                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Emigrating};font-weight:600;font-size:0.9em;">${emigratingPopPct.toFixed(1)}%</td>
                         </tr>
                         <tr>
                             <td style="padding:3px 0;display:flex;align-items:center;gap:4px;">
                                 <span style="display:inline-block;width:8px;height:8px;background:${riskColors.Destination};flex-shrink:0;"></span>
                                 <span style="color:${riskColors.Destination};font-weight:600;font-size:0.85em;">Low Risk, Lower Inc.</span>
                             </td>
-                            <td style="padding:3px 0;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">${formatNumber(props.DESTINATION_PARCELS)}</td>
-                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">${(props.DESTINATION_PARCELS_PCT * 100).toFixed(1)}%</td>
+                            <td style="padding:3px 0;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">${formatNumber(props.DESTINATION_POPULATION)}</td>
+                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Destination};font-weight:600;font-size:0.9em;">${destinationPopPct.toFixed(1)}%</td>
                         </tr>
                         <tr>
                             <td style="padding:3px 0;display:flex;align-items:center;gap:4px;">
                                 <span style="display:inline-block;width:8px;height:8px;background:${riskColors.Stable};flex-shrink:0;"></span>
                                 <span style="color:${riskColors.Stable};font-weight:600;font-size:0.85em;">Low Risk, Higher Inc.</span>
                             </td>
-                            <td style="padding:3px 0;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">${formatNumber(props.STABLE_PARCELS)}</td>
-                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">${(props.STABLE_PARCELS_PCT * 100).toFixed(1)}%</td>
+                            <td style="padding:3px 0;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">${formatNumber(props.STABLE_POPULATION)}</td>
+                            <td style="padding:3px 0 3px 4px;text-align:right;color:${riskColors.Stable};font-weight:600;font-size:0.9em;">${stablePopPct.toFixed(1)}%</td>
                         </tr>
                     </table>
                 </div>
@@ -545,7 +552,7 @@ map.on('load', () => {
 
                     const popup = new mapboxgl.Popup({
                         closeButton: true,
-                        maxWidth: "750px"
+                        maxWidth: "780px"
                     })
                         .setLngLat(e.lngLat)
                         .setHTML(countyPopupHTML(feature.properties))
@@ -712,7 +719,7 @@ map.on('load', () => {
                     // DESKTOP: popup to the right of the pin
                     geocoderCountyPopup = new mapboxgl.Popup({
                         closeButton: true,
-                        maxWidth: "750px",
+                        maxWidth: "780px",
                         anchor: 'left',
                         offset: [25, 0]
                     })
@@ -1016,20 +1023,27 @@ function mobileDisplacementHTML(props) {
     const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
     const baStats = blueAcresCountyStats[countyNameTitleCase];
 
+    // Population-based displacement
+    const totalPop = Number(props.TOTAL_POPULATION) || 1;
+    const crisisPopPct = (Number(props.CRISIS_POPULATION) / totalPop * 100);
+    const emigratingPopPct = (Number(props.EMIGRATING_POPULATION) / totalPop * 100);
+    const destinationPopPct = (Number(props.DESTINATION_POPULATION) / totalPop * 100);
+    const stablePopPct = (Number(props.STABLE_POPULATION) / totalPop * 100);
+
     const riskBar = `
         <div style="display:flex;height:14px;overflow:hidden;margin:6px 0 10px 0;box-shadow:0 1px 3px rgba(0,0,0,0.3);">
-            <div style="width:${(props.CRISIS_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Crisis};"></div>
-            <div style="width:${(props.EMIGRATING_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Emigrating};"></div>
-            <div style="width:${(props.DESTINATION_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Destination};"></div>
-            <div style="width:${(props.STABLE_PARCELS_PCT * 100).toFixed(0)}%;background:${riskColors.Stable};"></div>
+            <div style="width:${crisisPopPct.toFixed(0)}%;background:${riskColors.Crisis};"></div>
+            <div style="width:${emigratingPopPct.toFixed(0)}%;background:${riskColors.Emigrating};"></div>
+            <div style="width:${destinationPopPct.toFixed(0)}%;background:${riskColors.Destination};"></div>
+            <div style="width:${stablePopPct.toFixed(0)}%;background:${riskColors.Stable};"></div>
         </div>
     `;
 
     const groups = [
-        { label: 'High Risk, Lower Inc.', color: riskColors.Crisis, count: props.CRISIS_PARCELS, pct: props.CRISIS_PARCELS_PCT },
-        { label: 'High Risk, Higher Inc.', color: riskColors.Emigrating, count: props.EMIGRATING_PARCELS, pct: props.EMIGRATING_PARCELS_PCT },
-        { label: 'Low Risk, Lower Inc.', color: riskColors.Destination, count: props.DESTINATION_PARCELS, pct: props.DESTINATION_PARCELS_PCT },
-        { label: 'Low Risk, Higher Inc.', color: riskColors.Stable, count: props.STABLE_PARCELS, pct: props.STABLE_PARCELS_PCT }
+        { label: 'High Risk, Lower Inc.', color: riskColors.Crisis, count: props.CRISIS_POPULATION, pct: crisisPopPct },
+        { label: 'High Risk, Higher Inc.', color: riskColors.Emigrating, count: props.EMIGRATING_POPULATION, pct: emigratingPopPct },
+        { label: 'Low Risk, Lower Inc.', color: riskColors.Destination, count: props.DESTINATION_POPULATION, pct: destinationPopPct },
+        { label: 'Low Risk, Higher Inc.', color: riskColors.Stable, count: props.STABLE_POPULATION, pct: stablePopPct }
     ];
 
     const groupRows = groups.map(g => `
@@ -1038,7 +1052,7 @@ function mobileDisplacementHTML(props) {
                 <span style="display:inline-block;width:10px;height:10px;background:${g.color};flex-shrink:0;"></span>
                 <span style="color:${g.color};font-weight:600;font-size:0.85em;">${g.label}</span>
             </div>
-            <span style="color:#b0b0b0;font-size:0.85em;font-weight:600;">${formatNumber(g.count)} (${(g.pct * 100).toFixed(1)}%)</span>
+            <span style="color:#b0b0b0;font-size:0.85em;font-weight:600;">${formatNumber(g.count)} people (${g.pct.toFixed(1)}%)</span>
         </div>
     `).join('');
 
@@ -1053,33 +1067,36 @@ function mobileDisplacementHTML(props) {
         <div style="font-family:Arial,sans-serif;color:#e0e0e0;">
             <!-- Summary -->
             <div style="font-size:0.9em;color:#b0b0b0;margin-bottom:10px;">
-                ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2024 * 100).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${(props.PCT_PARCELS_RISK_2050 * 100).toFixed(1)}%</span> by 2050
+                ${formatNumber(props.TOTAL_PARCELS)} parcels · <span style="font-weight:700;color:#f87171;">${Number(props.PCT_PARCELS_RISK_2024).toFixed(1)}%</span> at risk in 2025, <span style="font-weight:700;color:#f87171;">${Number(props.PCT_PARCELS_RISK_2050).toFixed(1)}%</span> by 2050
             </div>
 
             <!-- Economic Risk -->
             <div style="background:#2a2a2a;padding:8px 10px;margin-bottom:10px;border:1px solid #3a3a3a;">
                 <div style="font-weight:600;font-size:0.78em;color:#888;letter-spacing:0.3px;text-transform:uppercase;margin-bottom:6px;">Economic Risk</div>
-                <div style="display:flex;justify-content:space-between;font-size:0.85em;color:#888;font-weight:600;margin-bottom:2px;">
-                    <span></span><span>2025</span><span style="margin-left:4px;">2050</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
-                    <span style="color:#b0b0b0;font-size:0.9em;">Market Value</span>
-                    <div>
-                        <span style="color:#f87171;font-weight:700;font-size:0.95em;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</span>
-                        <span style="color:#f87171;font-weight:700;font-size:0.95em;margin-left:8px;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</span>
-                    </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
-                    <span style="color:#b0b0b0;font-size:0.9em;">Tax Revenue</span>
-                    <div>
-                        <span style="color:#f87171;font-weight:700;font-size:0.95em;">$${formatNumber(props.TAX_RISK_2024)}</span>
-                        <span style="color:#f87171;font-weight:700;font-size:0.95em;margin-left:8px;">$${formatNumber(props.TAX_RISK_2050)}</span>
-                    </div>
-                </div>
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr>
+                        <td></td>
+                        <td style="text-align:right;font-size:0.85em;color:#888;font-weight:600;padding-bottom:2px;">2025</td>
+                        <td style="text-align:right;font-size:0.85em;color:#888;font-weight:600;padding:0 0 2px 4px;">2050</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:3px 0;font-size:0.9em;color:#b0b0b0;">Market Value</td>
+                        <td style="padding:3px 0;text-align:right;font-size:0.95em;color:#f87171;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2024)}</td>
+                        <td style="padding:3px 0 3px 4px;text-align:right;font-size:0.95em;color:#f87171;font-weight:700;">$${formatNumber(props.MARKET_VALUE_RISK_2050)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:3px 0;font-size:0.9em;color:#b0b0b0;">Tax Revenue</td>
+                        <td style="padding:3px 0;text-align:right;font-size:0.95em;color:#f87171;font-weight:700;">$${formatNumber(props.TAX_RISK_2024)}</td>
+                        <td style="padding:3px 0 3px 4px;text-align:right;font-size:0.95em;color:#f87171;font-weight:700;">$${formatNumber(props.TAX_RISK_2050)}</td>
+                    </tr>
+                </table>
             </div>
 
             <!-- Displacement Risk -->
-            <div style="font-weight:600;font-size:0.9em;color:#e0e0e0;margin-bottom:2px;">Displacement Risk</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:2px;">
+                <span style="font-weight:600;font-size:0.9em;color:#e0e0e0;">Displacement Risk</span>
+                <span style="font-size:0.8em;color:#888;">${formatNumber(props.TOTAL_POPULATION)} people</span>
+            </div>
             ${riskBar}
             ${groupRows}
             ${baHTML}
@@ -1193,12 +1210,32 @@ function openMobileCountySheet(props) {
 
     // Show sheet
     sheet.classList.remove('hidden');
+
+    // Wire up "Back to Map Controls" link if present
+    const backLink = document.getElementById('mobile-back-to-controls');
+    if (backLink) {
+        backLink.onclick = () => {
+            closeMobileCountySheet();
+            if (sidebar) {
+                sidebar.classList.remove('collapsed');
+                sidebar.classList.add('expanded');
+                const toggleLabel = document.querySelector('.sidebar-toggle-label');
+                if (toggleLabel) toggleLabel.textContent = 'Click to Hide Map Controls';
+            }
+        };
+    }
 }
 
 function closeMobileCountySheet() {
     const sheet = document.getElementById('mobile-county-sheet');
     sheet.classList.add('hidden');
     _mobileCountyProps = null;
+
+    // Re-show sidebar toggle so users can get back to map controls
+    if (sidebar && sidebar.classList.contains('collapsed')) {
+        const toggle = document.getElementById('sidebar-toggle');
+        if (toggle) toggle.style.display = '';
+    }
 }
 
 // Close button
