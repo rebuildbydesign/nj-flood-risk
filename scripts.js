@@ -209,6 +209,22 @@ function countyPopupHTML(props) {
             pct2025: props.PCT_WASTEWATER_TREATMENT_2025,
             count2050: props.WASTEWATER_TREATMENT_2050,
             pct2050: props.PCT_WASTEWATER_TREATMENT_2050
+        },
+        {
+            label: '👮 Police Stations',
+            total: props.TOTAL_POLICE_STATION,
+            count2025: props.POLICE_STATION_2025,
+            pct2025: props.PCT_POLICE_STATION_2025,
+            count2050: props.POLICE_STATION_2050,
+            pct2050: props.PCT_POLICE_STATION_2050
+        },
+        {
+            label: '🚒 Fire Departments',
+            total: props.TOTAL_FIRE_DEPARTMENT,
+            count2025: props.FIRE_DEPARTMENT_2025,
+            pct2025: props.PCT_FIRE_DEPARTMENT_2025,
+            count2050: props.FIRE_DEPARTMENT_2050,
+            pct2050: props.PCT_FIRE_DEPARTMENT_2050
         }
     ];
 
@@ -1086,7 +1102,9 @@ function mobileAssetsHTML(props) {
         { label: '☢️ Solid/Hazardous Waste', total: props.TOTAL_SOLID_HAZARD_WASTE, c25: props.SOLID_HAZARD_WASTE_2025, p25: props.PCT_SOLID_HAZARD_WASTE_2025, c50: props.SOLID_HAZARD_WASTE_2050, p50: props.PCT_SOLID_HAZARD_WASTE_2050 },
         { label: '🗑️ Landfills', total: props.TOTAL_SOLID_WASTE_LANDFILL, c25: props.SOLID_WASTE_LANDFILL_2025, p25: props.PCT_SOLID_WASTE_LANDFILL_2025, c50: props.SOLID_WASTE_LANDFILL_2050, p50: props.PCT_SOLID_WASTE_LANDFILL_2050 },
         { label: '☣️ Superfund Sites', total: props.TOTAL_SUPERFUND, c25: props.SUPERFUND_2025, p25: props.PCT_SUPERFUND_2025, c50: props.SUPERFUND_2050, p50: props.PCT_SUPERFUND_2050 },
-        { label: '💧 Wastewater', total: props.TOTAL_WASTEWATER_TREATMENT, c25: props.WASTEWATER_TREATMENT_2025, p25: props.PCT_WASTEWATER_TREATMENT_2025, c50: props.WASTEWATER_TREATMENT_2050, p50: props.PCT_WASTEWATER_TREATMENT_2050 }
+        { label: '💧 Wastewater', total: props.TOTAL_WASTEWATER_TREATMENT, c25: props.WASTEWATER_TREATMENT_2025, p25: props.PCT_WASTEWATER_TREATMENT_2025, c50: props.WASTEWATER_TREATMENT_2050, p50: props.PCT_WASTEWATER_TREATMENT_2050 },
+        { label: '👮 Police Stations', total: props.TOTAL_POLICE_STATION, c25: props.POLICE_STATION_2025, p25: props.PCT_POLICE_STATION_2025, c50: props.POLICE_STATION_2050, p50: props.PCT_POLICE_STATION_2050 },
+        { label: '🚒 Fire Depts', total: props.TOTAL_FIRE_DEPARTMENT, c25: props.FIRE_DEPARTMENT_2025, p25: props.PCT_FIRE_DEPARTMENT_2025, c50: props.FIRE_DEPARTMENT_2050, p50: props.PCT_FIRE_DEPARTMENT_2050 }
     ];
 
     const atRisk = assets.filter(a => {
