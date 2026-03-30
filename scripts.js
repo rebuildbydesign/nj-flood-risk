@@ -92,6 +92,16 @@ const countyToCity = {
     'ATLANTIC': { name: 'Atlantic City', key: 'ATLANTIC CITY' }
 };
 
+function countyFactSheetURL(countyName) {
+    if (!countyName) return 'https://rebuildbydesign.org/nj-flood-risk';
+    const slug = countyName
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join('_');
+    return `https://rebuildbydesign.org/wp-content/uploads/NJ_Under_Water_${slug}_County.pdf`;
+}
+
 // --- V2 POPUP HTML FUNCTION ---
 function countyPopupHTML(props) {
     // Blue Acres stats for this county
@@ -322,6 +332,7 @@ function countyPopupHTML(props) {
     let totalParcels = formatNumber(props.TOTAL_PARCELS);
 
     const featuredCity = countyToCity[props.COUNTY];
+    const factSheetURL = countyFactSheetURL(props.COUNTY);
     const cityLinkHTML = featuredCity ? `
         <a href="https://rebuildbydesign.github.io/nj-flood-risk-city/?city=${encodeURIComponent(featuredCity.key)}" target="_blank"
            style="font-weight:700;color:#e0e0e0;text-decoration:none;font-size:1em;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;background:#1a1a1a;border:1px solid #888888;border-radius:0;transition:background 0.2s ease,border-color 0.2s ease;letter-spacing:0.3px;text-transform:uppercase;"
@@ -416,11 +427,11 @@ function countyPopupHTML(props) {
 
                 <!-- CTA -->
                 <div style="margin-top:auto;padding-top:8px;display:flex;flex-direction:column;gap:4px;">
-                    <a href="https://rebuildbydesign.org/nj-flood-risk" target="_blank"
+                    <a href="${factSheetURL}" target="_blank" rel="noopener noreferrer"
                        style="font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:#1a1a1a;border:1px solid #888888;border-radius:0;transition:background 0.2s ease,border-color 0.2s ease;letter-spacing:0.3px;text-transform:uppercase;"
                        onmouseover="this.style.background='#2a2a2a';this.style.borderColor='#b0b0b0';"
                        onmouseout="this.style.background='#1a1a1a';this.style.borderColor='#888888';">
-                        Full Report →
+                        Download Fact Sheet →
                     </a>
                 </div>
             </div>
@@ -1022,6 +1033,7 @@ if (sidebarToggle && sidebar) {
 function mobileDisplacementHTML(props) {
     const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
     const baStats = blueAcresCountyStats[countyNameTitleCase];
+    const factSheetURL = countyFactSheetURL(props.COUNTY);
 
     // Population-based displacement
     const totalPop = Number(props.TOTAL_POPULATION) || 1;
@@ -1100,6 +1112,10 @@ function mobileDisplacementHTML(props) {
             ${riskBar}
             ${groupRows}
             ${baHTML}
+            <a href="${factSheetURL}" target="_blank" rel="noopener noreferrer"
+               style="display:block;text-align:center;font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;padding:8px 12px;background:#1a1a1a;border:1px solid #888;margin-top:12px;text-transform:uppercase;letter-spacing:0.3px;">
+                Download Fact Sheet →
+            </a>
         </div>
     `;
 }
