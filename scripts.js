@@ -13,7 +13,8 @@ const riskColors = {
 // Always center on NJ geographically. On desktop, Mapbox padding (set after load)
 // visually shifts NJ left to clear the finding card — without moving the geographic center.
 const isIframe = window.self !== window.top;
-let mapCenter = [-74.6, 40.15205];
+const desktopRightPadding = 760;
+let mapCenter = [-74.3, 40.15205];
 let mapZoom = 7.5;
 
 if (window.innerWidth <= 600 && !isIframe) {
@@ -469,7 +470,7 @@ map.on('load', () => {
     // On desktop (not iframe), use Mapbox padding to visually shift NJ left, clearing the finding card.
     // This is the correct approach — keeps NJ geographically centered, no broken coordinates.
     if (window.innerWidth > 1024 && !isIframe) {
-        map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: 410 }, duration: 0 });
+        map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: desktopRightPadding }, duration: 0 });
     }
 
     // 1. Add parcel layers (displacement risk groups)
@@ -709,7 +710,7 @@ map.on('load', () => {
         map.flyTo({
             center: coords,
             zoom: 10.5,
-            padding: { top: 0, bottom: 0, left: 0, right: window.innerWidth > 1024 ? 410 : 0 },
+            padding: { top: 0, bottom: 0, left: 0, right: window.innerWidth > 1024 ? desktopRightPadding : 0 },
             speed: 1.2,
             curve: 1
         });
