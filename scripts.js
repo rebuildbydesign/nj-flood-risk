@@ -9,35 +9,174 @@ const riskColors = {
     Stable: '#f7c320'
 };
 
-// --- Dynamic zoom/center ---
-// Always center on NJ geographically. On desktop, Mapbox padding (set after load)
-// visually shifts NJ left to clear the finding card — without moving the geographic center.
+// --- Initial NJ viewport ---
+// Fit New Jersey to the available map canvas and reserve space for visible overlays.
 const isIframe = window.self !== window.top;
-const desktopRightPadding = 760;
-let mapCenter = [-74.3, 40.15205];
-let mapZoom = 7.5;
+const newJerseyBounds = [
+    [-75.559566, 38.92851900015826],
+    [-73.90267499949012, 41.357607]
+];
+let countyGeoJSONData = null;
 
-if (window.innerWidth <= 600 && !isIframe) {
-    // Mobile (standalone): finding card is hidden, keep NJ centered
-    mapCenter = [-74.3, 39.9];
-    mapZoom = 6.65;
-} else if (isIframe) {
-    // Iframe/modal embed: center on NJ without sidebar offset, show full state
-    mapCenter = [-74.4, 40.0];
-    mapZoom = 7.7;
+function getInitialViewportPadding() {
+    const mapEl = document.getElementById('map');
+    const findingCard = document.getElementById('finding-card');
+    const isNarrowLayout = window.innerWidth <= 1024;
+    const basePadding = isNarrowLayout ? 24 : 40;
+
+    const padding = {
+        top: isNarrowLayout ? 24 : 36,
+        right: basePadding,
+        bottom: isNarrowLayout ? 24 : 36,
+        left: basePadding
+    };
+
+    if (!mapEl || isIframe) return padding;
+
+    const findingCardVisible =
+        findingCard &&
+        window.getComputedStyle(findingCard).display !== 'none';
+
+    if (findingCardVisible) {
+        const mapRect = mapEl.getBoundingClientRect();
+        const cardRect = findingCard.getBoundingClientRect();
+        const occupiedRight = Math.max(0, mapRect.right - cardRect.left);
+        padding.right = Math.max(basePadding, Math.ceil(occupiedRight + 24));
+    }
+
+    return padding;
+}
+
+function fitMapToNewJersey(options = {}) {
+    const { animate = false } = options;
+    isAutoFittingViewport = true;
+    map.fitBounds(newJerseyBounds, {
+        padding: getInitialViewportPadding(),
+        maxZoom: window.innerWidth <= 600 ? 7 : 7.7,
+        duration: animate ? 300 : 0
+    });
+    map.once('moveend', () => {
+        isAutoFittingViewport = false;
+    });
+}
+
+function isPointInRing(point, ring) {
+    const [x, y] = point;
+    let inside = false;
+
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [xi, yi] = ring[i];
+        const [xj, yj] = ring[j];
+        const intersects = ((yi > y) !== (yj > y)) &&
+            (x < ((xj - xi) * (y - yi)) / ((yj - yi) || Number.EPSILON) + xi);
+
+        if (intersects) inside = !inside;
+    }
+
+    return inside;
+}
+
+function isPointInPolygon(point, polygonCoords) {
+    if (!polygonCoords.length || !isPointInRing(point, polygonCoords[0])) {
+        return false;
+    }
+
+    for (let i = 1; i < polygonCoords.length; i += 1) {
+        if (isPointInRing(point, polygonCoords[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function findCountyFeatureForLngLat(lngLat) {
+    if (!countyGeoJSONData?.features?.length) return null;
+
+    for (const feature of countyGeoJSONData.features) {
+        const geometry = feature.geometry;
+        if (!geometry?.coordinates) continue;
+
+        if (geometry.type === 'Polygon' && isPointInPolygon(lngLat, geometry.coordinates)) {
+            return feature;
+        }
+
+        if (geometry.type === 'MultiPolygon') {
+            for (const polygon of geometry.coordinates) {
+                if (isPointInPolygon(lngLat, polygon)) {
+                    return feature;
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
+const desktopCountyPopupWidth = 740;
+const desktopCountyPopupMargin = 32;
+const desktopCountyPopupOffset = 24;
+
+function getDesktopCountyPopupPlacement(lngLat) {
+    const mapWidth = map.getContainer().clientWidth || window.innerWidth;
+    const point = map.project(lngLat);
+    const roomRight = mapWidth - point.x - desktopCountyPopupMargin - desktopCountyPopupOffset;
+    const roomLeft = point.x - desktopCountyPopupMargin - desktopCountyPopupOffset;
+
+    let anchor = roomRight >= desktopCountyPopupWidth ? 'left' : 'right';
+    if (roomRight < desktopCountyPopupWidth && roomLeft < desktopCountyPopupWidth) {
+        anchor = roomRight >= roomLeft ? 'left' : 'right';
+    } else if (roomLeft > roomRight && roomLeft >= desktopCountyPopupWidth) {
+        anchor = 'right';
+    }
+
+    let desiredPointX = point.x;
+    if (anchor === 'left') {
+        desiredPointX = Math.min(point.x, mapWidth - desktopCountyPopupMargin - desktopCountyPopupOffset - desktopCountyPopupWidth);
+    } else {
+        desiredPointX = Math.max(point.x, desktopCountyPopupMargin + desktopCountyPopupOffset + desktopCountyPopupWidth);
+    }
+
+    return {
+        anchor,
+        offset: anchor === 'left' ? [desktopCountyPopupOffset, 0] : [-desktopCountyPopupOffset, 0],
+        maxWidth: `${desktopCountyPopupWidth}px`,
+        targetOffsetX: desiredPointX - (mapWidth / 2)
+    };
 }
 
 // --- Initialize Mapbox Map with LIGHT basemap ---
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/j00by/cmbqvtons000201qlgcox1gi5', // LIGHT BASEMAP
-    center: mapCenter,
-    zoom: mapZoom,
+    center: [-74.45, 40.15],
+    zoom: 7,
     minZoom: 6.5,
     maxBounds: [
         [-78.27621, 38.89837],
         [-72.85168, 41.38302]
     ]
+});
+
+let resizeTimeout;
+let isAutoFittingViewport = false;
+let shouldMaintainResponsiveViewport = true;
+window.addEventListener('resize', () => {
+    window.clearTimeout(resizeTimeout);
+    resizeTimeout = window.setTimeout(() => {
+        map.resize();
+        if (shouldMaintainResponsiveViewport) {
+            fitMapToNewJersey();
+        }
+    }, 120);
+});
+
+['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(eventName => {
+    map.on(eventName, () => {
+        if (!isAutoFittingViewport) {
+            shouldMaintainResponsiveViewport = false;
+        }
+    });
 });
 
 // --- Displacement Risk Group Layers ---
@@ -461,17 +600,42 @@ function countyPopupHTML(props) {
     `;
 }
 
+function openDesktopCountyPopup(lngLat, props, onClose) {
+    const popupConfig = getDesktopCountyPopupPlacement(lngLat);
+    const openPopup = () => {
+        const popup = new mapboxgl.Popup({
+            closeButton: true,
+            maxWidth: popupConfig.maxWidth,
+            anchor: popupConfig.anchor,
+            offset: popupConfig.offset
+        })
+            .setLngLat(lngLat)
+            .setHTML(countyPopupHTML(props))
+            .addTo(map);
+
+        if (onClose) {
+            popup.on('close', onClose);
+        }
+
+        return popup;
+    };
+
+    map.easeTo({
+        center: lngLat,
+        offset: [popupConfig.targetOffsetX, 0],
+        duration: 250
+    });
+
+    map.once('moveend', openPopup);
+}
+
 // --- Map Load Event ---
 map.on('load', () => {
     // Hide loading indicator
     const loadingEl = document.getElementById('loading');
     if (loadingEl) loadingEl.style.display = 'none';
 
-    // On desktop (not iframe), use Mapbox padding to visually shift NJ left, clearing the finding card.
-    // This is the correct approach — keeps NJ geographically centered, no broken coordinates.
-    if (window.innerWidth > 1024 && !isIframe) {
-        map.easeTo({ padding: { top: 0, bottom: 0, left: 0, right: desktopRightPadding }, duration: 0 });
-    }
+    fitMapToNewJersey();
 
     // 1. Add parcel layers (displacement risk groups)
     parcelLayers.forEach(layer => {
@@ -535,6 +699,7 @@ map.on('load', () => {
             return response.json();
         })
         .then(geojson => {
+            countyGeoJSONData = geojson;
             map.addSource('counties', { 
                 type: 'geojson', 
                 data: geojson 
@@ -561,16 +726,7 @@ map.on('load', () => {
                 } else {
                     // DESKTOP: classic Mapbox popup
                     if (findingCard) findingCard.style.display = 'none';
-
-                    const popup = new mapboxgl.Popup({
-                        closeButton: true,
-                        maxWidth: "780px"
-                    })
-                        .setLngLat(e.lngLat)
-                        .setHTML(countyPopupHTML(feature.properties))
-                        .addTo(map);
-
-                    popup.on('close', () => {
+                    openDesktopCountyPopup(e.lngLat, feature.properties, () => {
                         if (findingCard) findingCard.style.display = '';
                     });
                 }
@@ -699,6 +855,7 @@ map.on('load', () => {
     geocoder.on('result', (e) => {
         const coords = e.result.center;
         const findingCard = document.getElementById('finding-card');
+        shouldMaintainResponsiveViewport = false;
 
         // Hide finding card while a searched location is active
         if (findingCard) findingCard.style.display = 'none';
@@ -710,16 +867,19 @@ map.on('load', () => {
         map.flyTo({
             center: coords,
             zoom: 10.5,
-            padding: { top: 0, bottom: 0, left: 0, right: window.innerWidth > 1024 ? desktopRightPadding : 0 },
+            padding: getInitialViewportPadding(),
+            offset: window.innerWidth > 1024 ? [getDesktopCountyPopupPlacement(coords).targetOffsetX, 0] : [0, 0],
             speed: 1.2,
             curve: 1
         });
 
         // After fly animation completes, find the county and auto-open its popup
         map.once('moveend', () => {
-            // Query the county-fills layer at the searched point
-            const point = map.project(coords);
-            const features = map.queryRenderedFeatures(point, { layers: ['county-fills'] });
+            const countyFeature = findCountyFeatureForLngLat(coords);
+            const renderedFeatures = countyFeature
+                ? [countyFeature]
+                : map.queryRenderedFeatures(map.project(coords), { layers: ['county-fills'] });
+            const features = renderedFeatures || [];
 
             if (features && features.length > 0) {
                 const feature = features[0];
@@ -728,12 +888,13 @@ map.on('load', () => {
                     // MOBILE/TABLET: use bottom sheet
                     openMobileCountySheet(feature.properties);
                 } else {
-                    // DESKTOP: popup to the right of the pin
+                    // DESKTOP: fixed-width popup positioned after flyTo shift
+                    const popupConfig = getDesktopCountyPopupPlacement(coords);
                     geocoderCountyPopup = new mapboxgl.Popup({
                         closeButton: true,
-                        maxWidth: "780px",
-                        anchor: 'left',
-                        offset: [25, 0]
+                        maxWidth: popupConfig.maxWidth,
+                        anchor: popupConfig.anchor,
+                        offset: popupConfig.offset
                     })
                     .setLngLat(coords)
                     .setHTML(countyPopupHTML(feature.properties))
@@ -928,6 +1089,7 @@ map.on('load', () => {
         const clusterId = features[0].properties.cluster_id;
         map.getSource('blueacres-centroids').getClusterExpansionZoom(clusterId, (err, zoom) => {
             if (err) return;
+            shouldMaintainResponsiveViewport = false;
             map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
         });
     });
