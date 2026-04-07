@@ -40,28 +40,29 @@
       <strong>3.4 million properties</strong> analyzed to map where flood risk threatens people, budgets, and public assets. Without government intervention, many residents may lack the resources to move out of harm&rsquo;s way.
     </p>
 
-    <!-- Step 1: Risk Groups -->
-    <h3>Step 1: Toggle Displacement Groups</h3>
+    <!-- Step 1: County dropdown + search -->
+    <h3>Step 1: Select County or Address</h3>
+    <p class="helper-text">Choose a county from the dropdown or search an address to jump to county-level findings.</p>
+    <select id="county-select">
+      <option value="">Select a County</option>
+    </select>
+    <p class="helper-text">Or search an address below.</p>
+    <div id="geocoder-container"></div>
+
+    <!-- Step 2: Risk Groups -->
+    <h3>Step 2: Toggle Displacement Groups</h3>
     <p class="helper-text">Toggle groups by flood exposure and financial capacity.</p>
 
     <div class="risk-buttons">
-      <button data-group="Crisis" style="background:#dd4000" title="High flood risk + lower income — most vulnerable to forced displacement">HIGH FLOOD RISK, LOWER INCOME</button>
-      <button data-group="Emigrating" style="background:#f27407" title="High flood risk + higher income — able to relocate but still at risk">HIGH FLOOD RISK, HIGHER INCOME</button>
-      <button data-group="Destination" style="background:#f2a007" title="Low flood risk + lower income — potential destination for displaced residents">LOW FLOOD RISK, LOWER INCOME</button>
-      <button data-group="Stable" style="background:#f7c320" title="Low flood risk + higher income — least displacement pressure">LOW FLOOD RISK, HIGHER INCOME</button>
+      <button data-group="Crisis" data-tooltip="High flood risk + lower income — most vulnerable to forced displacement" style="background:#dd4000" aria-label="High flood risk + lower income — most vulnerable to forced displacement">HIGH FLOOD RISK, LOWER INCOME</button>
+      <button data-group="Emigrating" data-tooltip="High flood risk + higher income — able to relocate but still at risk" style="background:#f27407" aria-label="High flood risk + higher income — able to relocate but still at risk">HIGH FLOOD RISK, HIGHER INCOME</button>
+      <button data-group="Destination" data-tooltip="Low flood risk + lower income — potential destination for displaced residents" style="background:#f2a007" aria-label="Low flood risk + lower income — potential destination for displaced residents">LOW FLOOD RISK, LOWER INCOME</button>
+      <button data-group="Stable" data-tooltip="Low flood risk + higher income — least displacement pressure" style="background:#f7c320" aria-label="Low flood risk + higher income — least displacement pressure">LOW FLOOD RISK, HIGHER INCOME</button>
     </div>
 
-    <!-- Step 2: Search -->
-    <h3>Step 2: Search for an Address</h3>
-    <div id="geocoder-container"></div>
-
-    <!-- Step 3: County Information -->
-    <h3>Step 3: Explore County Data</h3>
-    <p class="helper-text">Click any county for displacement and infrastructure data.</p>
-
-    <!-- Step 4: Blue Acres Buyouts -->
+    <!-- Step 3: Blue Acres Buyouts -->
     <div id="blue-acres-section">
-      <h3>Step 4: Blue Acres Buyouts</h3>
+      <h3>Step 3: Blue Acres Buyouts</h3>
       <p class="helper-text">
         Since 1987, NJ's <strong>Blue Acres</strong> program has purchased <strong>1,677 parcels</strong> (<strong>388.1 acres</strong>) of flood-prone properties.
       </p>

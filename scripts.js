@@ -17,6 +17,7 @@ const newJerseyBounds = [
     [-73.90267499949012, 41.357607]
 ];
 let countyGeoJSONData = null;
+const countyBoundsByName = {};
 
 function getInitialViewportPadding() {
     const mapEl = document.getElementById('map');
@@ -111,6 +112,35 @@ function findCountyFeatureForLngLat(lngLat) {
     }
 
     return null;
+}
+
+function extendBoundsFromCoords(bounds, coords) {
+    if (!Array.isArray(coords[0])) {
+        const [lng, lat] = coords;
+        bounds[0][0] = Math.min(bounds[0][0], lng);
+        bounds[0][1] = Math.min(bounds[0][1], lat);
+        bounds[1][0] = Math.max(bounds[1][0], lng);
+        bounds[1][1] = Math.max(bounds[1][1], lat);
+        return;
+    }
+
+    coords.forEach(coord => extendBoundsFromCoords(bounds, coord));
+}
+
+function getFeatureBounds(feature) {
+    const bounds = [
+        [Infinity, Infinity],
+        [-Infinity, -Infinity]
+    ];
+    extendBoundsFromCoords(bounds, feature.geometry.coordinates);
+    return bounds;
+}
+
+function getBoundsCenter(bounds) {
+    return [
+        (bounds[0][0] + bounds[1][0]) / 2,
+        (bounds[0][1] + bounds[1][1]) / 2
+    ];
 }
 
 const desktopCountyPopupWidth = 740;
@@ -233,13 +263,13 @@ const countyToCity = {
 };
 
 function countyFactSheetURL(countyName) {
-    if (!countyName) return 'https://rebuildbydesign.org/nj-flood-risk';
-    const slug = countyName
+    if (!countyName) return 'https://rebuildbydesign.github.io/nj-flood-risk-fact-sheet/';
+    const formattedCounty = countyName
         .toLowerCase()
         .split(/\s+/)
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('_');
-    return `https://rebuildbydesign.org/wp-content/uploads/NJ_Under_Water_${slug}_County.pdf`;
+        .join(' ');
+    return `https://rebuildbydesign.github.io/nj-flood-risk-fact-sheet/?county=${encodeURIComponent(formattedCounty)}`;
 }
 
 // --- V2 POPUP HTML FUNCTION ---
@@ -473,6 +503,7 @@ function countyPopupHTML(props) {
 
     const featuredCity = countyToCity[props.COUNTY];
     const factSheetURL = countyFactSheetURL(props.COUNTY);
+    const factSheetLabel = `Download ${props.COUNTY} County Fact Sheet`;
     const cityLinkHTML = featuredCity ? `
         <a href="https://rebuildbydesign.github.io/nj-flood-risk-city/?city=${encodeURIComponent(featuredCity.key)}" target="_blank"
            style="font-weight:700;color:#e0e0e0;text-decoration:none;font-size:1em;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;background:#1a1a1a;border:1px solid #888888;border-radius:0;transition:background 0.2s ease,border-color 0.2s ease;letter-spacing:0.3px;text-transform:uppercase;"
@@ -568,10 +599,10 @@ function countyPopupHTML(props) {
                 <!-- CTA -->
                 <div style="margin-top:auto;padding-top:8px;display:flex;flex-direction:column;gap:4px;">
                     <a href="${factSheetURL}" target="_blank" rel="noopener noreferrer"
-                       style="font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:#1a1a1a;border:1px solid #888888;border-radius:0;transition:background 0.2s ease,border-color 0.2s ease;letter-spacing:0.3px;text-transform:uppercase;"
+                       style="font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:#1a1a1a;border:1px solid #888888;border-radius:0;transition:background 0.2s ease,border-color 0.2s ease;letter-spacing:0.3px;text-transform:uppercase;text-align:center;"
                        onmouseover="this.style.background='#2a2a2a';this.style.borderColor='#b0b0b0';"
                        onmouseout="this.style.background='#1a1a1a';this.style.borderColor='#888888';">
-                        Download Fact Sheet →
+                        ${factSheetLabel} →
                     </a>
                 </div>
             </div>
@@ -627,6 +658,31 @@ function openDesktopCountyPopup(lngLat, props, onClose) {
     });
 
     map.once('moveend', openPopup);
+}
+
+function focusCountyFromDropdown(feature) {
+    const findingCard = document.getElementById('finding-card');
+    const countyBounds = countyBoundsByName[feature.properties.COUNTY] || getFeatureBounds(feature);
+    const countyCenter = getBoundsCenter(countyBounds);
+
+    shouldMaintainResponsiveViewport = false;
+    if (findingCard) findingCard.style.display = 'none';
+
+    map.fitBounds(countyBounds, {
+        padding: getInitialViewportPadding(),
+        maxZoom: window.innerWidth <= 1024 ? 8.4 : 8.8,
+        duration: 500
+    });
+
+    map.once('moveend', () => {
+        if (window.innerWidth <= 1024) {
+            openMobileCountySheet(feature.properties);
+        } else {
+            openDesktopCountyPopup(countyCenter, feature.properties, () => {
+                if (findingCard) findingCard.style.display = '';
+            });
+        }
+    });
 }
 
 // --- Map Load Event ---
@@ -700,6 +756,23 @@ map.on('load', () => {
         })
         .then(geojson => {
             countyGeoJSONData = geojson;
+            const countySelect = document.getElementById('county-select');
+
+            geojson.features
+                .slice()
+                .sort((a, b) => a.properties.COUNTY.localeCompare(b.properties.COUNTY))
+                .forEach(feature => {
+                    countyBoundsByName[feature.properties.COUNTY] = getFeatureBounds(feature);
+
+                    if (countySelect) {
+                        const option = document.createElement('option');
+                        const countyName = feature.properties.COUNTY.charAt(0) + feature.properties.COUNTY.slice(1).toLowerCase();
+                        option.value = feature.properties.COUNTY;
+                        option.textContent = countyName;
+                        countySelect.appendChild(option);
+                    }
+                });
+
             map.addSource('counties', { 
                 type: 'geojson', 
                 data: geojson 
@@ -719,6 +792,8 @@ map.on('load', () => {
             map.on('click', 'county-fills', (e) => {
                 const feature = e.features[0];
                 const findingCard = document.getElementById('finding-card');
+                const countySelect = document.getElementById('county-select');
+                if (countySelect) countySelect.value = feature.properties.COUNTY;
 
                 if (window.innerWidth <= 1024) {
                     // MOBILE/TABLET: show bottom sheet instead of Mapbox popup
@@ -731,6 +806,18 @@ map.on('load', () => {
                     });
                 }
             });
+
+            if (countySelect) {
+                countySelect.addEventListener('change', (e) => {
+                    const selectedCounty = e.target.value;
+                    if (!selectedCounty) return;
+
+                    const selectedFeature = geojson.features.find(feature => feature.properties.COUNTY === selectedCounty);
+                    if (selectedFeature) {
+                        focusCountyFromDropdown(selectedFeature);
+                    }
+                });
+            }
 
             // Hover tooltip for counties
             let hoverPopup = null;
@@ -845,6 +932,7 @@ map.on('load', () => {
         },
         countries: 'us',
         bbox: [-75.559614, 38.928519, -73.893979, 41.357423],
+        limit: 1,
         placeholder: 'Enter Address Here',
         flyTo: false // Disable built-in flyTo — we handle it manually so padding is respected
     });
@@ -883,6 +971,8 @@ map.on('load', () => {
 
             if (features && features.length > 0) {
                 const feature = features[0];
+                const countySelect = document.getElementById('county-select');
+                if (countySelect) countySelect.value = feature.properties.COUNTY;
 
                 if (window.innerWidth <= 1024) {
                     // MOBILE/TABLET: use bottom sheet

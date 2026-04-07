@@ -124,6 +124,7 @@ h3 {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 15px;
+  overflow: visible;
 }
 
 .risk-buttons button {
@@ -138,20 +139,87 @@ h3 {
   transition: all 0.15s ease;
   font-family: inherit;
   text-align: left;
+  position: relative;
+  overflow: visible;
+  z-index: 1;
 }
 
 .risk-buttons button:hover {
   transform: translateX(2px);
   filter: brightness(1.1);
+  z-index: 30;
 }
 
-/* Native tooltip styling via title attribute — enhanced with CSS */
-.risk-buttons button[title] {
-  position: relative;
+/* Immediate custom tooltip for displacement buttons */
+.risk-buttons button[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 25;
+  padding: 10px 12px;
+  background: rgba(10, 10, 10, 0.96);
+  color: #f5f5f5;
+  border-left: 4px solid #f7c320;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  font-size: 0.82em;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.risk-buttons button[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: calc(100% + 2px);
+  z-index: 26;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid rgba(10, 10, 10, 0.96);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.risk-buttons button[data-tooltip]:hover::after,
+.risk-buttons button[data-tooltip]:hover::before,
+.risk-buttons button[data-tooltip]:focus-visible::after,
+.risk-buttons button[data-tooltip]:focus-visible::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.risk-buttons button:focus-visible {
+  z-index: 30;
 }
 
 .risk-buttons button.active {
   border-color: #fff;
+}
+
+/* County dropdown - matches city project control style */
+#county-select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #363636;
+  color: #fff;
+  border: 2px solid #4a4a4a;
+  font-size: 0.875em;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#county-select:focus {
+  outline: none;
+  border-color: #f7c320;
 }
 
 /* Show All Toggle Button */
@@ -179,6 +247,11 @@ h3 {
   .risk-buttons button {
     padding: 9px 10px;
     font-size: 0.7em;
+  }
+
+  .risk-buttons button[data-tooltip]::after,
+  .risk-buttons button[data-tooltip]::before {
+    display: none;
   }
 }
 
@@ -717,6 +790,7 @@ table.method-sources td:last-child {
   right: auto !important;
   left: auto !important;
 }
+
 
 /* ========================================
    SIDEBAR TOGGLE HANDLE (mobile/tablet only)
