@@ -51,13 +51,28 @@
 
     <!-- Step 2: Risk Groups -->
     <h3>Step 2: Toggle Displacement Groups</h3>
-    <p class="helper-text">Toggle groups by flood exposure and financial capacity.</p>
+    <div class="tooltip-wrap">
+      <p class="helper-text tooltip-trigger">Toggle groups by flood exposure and financial capacity.</p>
+      <span class="tooltip">Displacement risk groups combine flood exposure and financial capacity to show who may be most vulnerable to forced relocation.</span>
+    </div>
 
     <div class="risk-buttons">
-      <button data-group="Crisis" data-tooltip="High flood risk + lower income — most vulnerable to forced displacement" style="background:#dd4000" aria-label="High flood risk + lower income — most vulnerable to forced displacement">HIGH FLOOD RISK, LOWER INCOME</button>
-      <button data-group="Emigrating" data-tooltip="High flood risk + higher income — able to relocate but still at risk" style="background:#f27407" aria-label="High flood risk + higher income — able to relocate but still at risk">HIGH FLOOD RISK, HIGHER INCOME</button>
-      <button data-group="Destination" data-tooltip="Low flood risk + lower income — potential destination for displaced residents" style="background:#f2a007" aria-label="Low flood risk + lower income — potential destination for displaced residents">LOW FLOOD RISK, LOWER INCOME</button>
-      <button data-group="Stable" data-tooltip="Low flood risk + higher income — least displacement pressure" style="background:#f7c320" aria-label="Low flood risk + higher income — least displacement pressure">LOW FLOOD RISK, HIGHER INCOME</button>
+      <div class="tooltip-wrap">
+        <button data-group="Crisis" style="background:#dd4000" aria-label="High flood risk + lower income — most vulnerable to forced displacement">HIGH FLOOD RISK, LOWER INCOME</button>
+        <span class="tooltip">High flood risk + lower income — most vulnerable to forced displacement</span>
+      </div>
+      <div class="tooltip-wrap">
+        <button data-group="Emigrating" style="background:#f27407" aria-label="High flood risk + higher income — able to relocate but still at risk">HIGH FLOOD RISK, HIGHER INCOME</button>
+        <span class="tooltip">High flood risk + higher income — able to relocate but still at risk</span>
+      </div>
+      <div class="tooltip-wrap">
+        <button data-group="Destination" style="background:#f2a007" aria-label="Low flood risk + lower income — potential destination for displaced residents">LOW FLOOD RISK, LOWER INCOME</button>
+        <span class="tooltip">Low flood risk + lower income — potential destination for displaced residents</span>
+      </div>
+      <div class="tooltip-wrap">
+        <button data-group="Stable" style="background:#f7c320" aria-label="Low flood risk + higher income — least displacement pressure">LOW FLOOD RISK, HIGHER INCOME</button>
+        <span class="tooltip">Low flood risk + higher income — least displacement pressure</span>
+      </div>
     </div>
 
     <!-- Step 3: Blue Acres Buyouts -->
@@ -132,6 +147,7 @@
 
   <!-- METHODOLOGY BANNER -->
   <button id="howto-banner" class="howto-banner" aria-label="Methodology">i</button>
+  <div id="floating-tooltip"></div>
 
   <!-- METHODOLOGY MODAL -->
   <div id="howto-modal" class="howto-modal hidden" tabindex="-1">

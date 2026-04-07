@@ -1530,3 +1530,38 @@ document.querySelectorAll('.mobile-tab').forEach(tab => {
         }
     });
 });
+
+// ======================================
+// FLOATING TOOLTIP - match city project sidebar behavior
+// ======================================
+const floatingTooltip = document.getElementById('floating-tooltip');
+
+if (floatingTooltip) {
+    document.querySelectorAll('.tooltip-wrap').forEach(wrap => {
+        const tipText = wrap.querySelector('.tooltip')?.textContent || '';
+
+        const showTooltip = () => {
+            if (!tipText || window.innerWidth <= 768) return;
+
+            const rect = wrap.getBoundingClientRect();
+            floatingTooltip.textContent = tipText;
+            floatingTooltip.style.left = `${rect.right + 12}px`;
+            floatingTooltip.style.top = `${rect.top + rect.height / 2}px`;
+            floatingTooltip.style.transform = 'translateY(-50%)';
+            floatingTooltip.classList.add('visible');
+        };
+
+        const hideTooltip = () => {
+            floatingTooltip.classList.remove('visible');
+        };
+
+        wrap.addEventListener('mouseenter', showTooltip);
+        wrap.addEventListener('mouseleave', hideTooltip);
+
+        const trigger = wrap.querySelector('button, .tooltip-trigger');
+        if (trigger) {
+            trigger.addEventListener('focus', showTooltip);
+            trigger.addEventListener('blur', hideTooltip);
+        }
+    });
+}
