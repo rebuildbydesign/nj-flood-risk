@@ -18,6 +18,40 @@ const newJerseyBounds = [
 ];
 let countyGeoJSONData = null;
 const countyBoundsByName = {};
+let activeCountyPopup = null;
+let countyPopupRequestToken = 0;
+let geocoderCountyPopup = null;
+
+function clearActiveCountyPopup() {
+    if (activeCountyPopup) {
+        activeCountyPopup.remove();
+        activeCountyPopup = null;
+    }
+}
+
+function resetCountyDetailUI() {
+    countyPopupRequestToken += 1;
+    clearActiveCountyPopup();
+    closeMobileCountySheet();
+}
+
+function registerActiveCountyPopup(popup, onClose) {
+    activeCountyPopup = popup;
+    popup.on('close', () => {
+        if (activeCountyPopup === popup) {
+            activeCountyPopup = null;
+        }
+        if (geocoderCountyPopup === popup) {
+            geocoderCountyPopup = null;
+        }
+        if (onClose) onClose();
+    });
+    return popup;
+}
+
+function formatCountyName(rawName) {
+    return rawName.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
 
 function getInitialViewportPadding() {
     const mapEl = document.getElementById('map');
@@ -275,7 +309,7 @@ function countyFactSheetURL(countyName) {
 // --- V2 POPUP HTML FUNCTION ---
 function countyPopupHTML(props) {
     // Blue Acres stats for this county
-    const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    const countyNameTitleCase = formatCountyName(props.COUNTY);
     const baStats = blueAcresCountyStats[countyNameTitleCase];
     const baHTML = baStats ? `
         <div style="background:#1a332e;border-left:3px solid #2dd4a8;padding:5px 8px;">
@@ -633,20 +667,21 @@ function countyPopupHTML(props) {
 
 function openDesktopCountyPopup(lngLat, props, onClose) {
     const popupConfig = getDesktopCountyPopupPlacement(lngLat);
+    const requestToken = countyPopupRequestToken;
     const openPopup = () => {
-        const popup = new mapboxgl.Popup({
+        if (requestToken !== countyPopupRequestToken) return null;
+
+        clearActiveCountyPopup();
+
+        const popup = registerActiveCountyPopup(new mapboxgl.Popup({
             closeButton: true,
             maxWidth: popupConfig.maxWidth,
             anchor: popupConfig.anchor,
             offset: popupConfig.offset
-        })
+        }), onClose)
             .setLngLat(lngLat)
             .setHTML(countyPopupHTML(props))
             .addTo(map);
-
-        if (onClose) {
-            popup.on('close', onClose);
-        }
 
         return popup;
     };
@@ -665,6 +700,7 @@ function focusCountyFromDropdown(feature) {
     const countyBounds = countyBoundsByName[feature.properties.COUNTY] || getFeatureBounds(feature);
     const countyCenter = getBoundsCenter(countyBounds);
 
+    resetCountyDetailUI();
     shouldMaintainResponsiveViewport = false;
     if (findingCard) findingCard.style.display = 'none';
 
@@ -766,7 +802,7 @@ map.on('load', () => {
 
                     if (countySelect) {
                         const option = document.createElement('option');
-                        const countyName = feature.properties.COUNTY.charAt(0) + feature.properties.COUNTY.slice(1).toLowerCase();
+                        const countyName = formatCountyName(feature.properties.COUNTY);
                         option.value = feature.properties.COUNTY;
                         option.textContent = countyName;
                         countySelect.appendChild(option);
@@ -794,6 +830,7 @@ map.on('load', () => {
                 const findingCard = document.getElementById('finding-card');
                 const countySelect = document.getElementById('county-select');
                 if (countySelect) countySelect.value = feature.properties.COUNTY;
+                resetCountyDetailUI();
 
                 if (window.innerWidth <= 1024) {
                     // MOBILE/TABLET: show bottom sheet instead of Mapbox popup
@@ -939,17 +976,15 @@ map.on('load', () => {
 
     // After geocoder result: fly with padding so marker lands at visual center,
     // hide the finding card, and auto-open the county popup to the right of the pin
-    let geocoderCountyPopup = null;
     geocoder.on('result', (e) => {
         const coords = e.result.center;
         const findingCard = document.getElementById('finding-card');
+        resetCountyDetailUI();
+        const requestToken = countyPopupRequestToken;
         shouldMaintainResponsiveViewport = false;
 
         // Hide finding card while a searched location is active
         if (findingCard) findingCard.style.display = 'none';
-
-        // Remove any previous geocoder county popup
-        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
 
         // Fly to result with the same right padding so the pin sits at visual center
         map.flyTo({
@@ -963,6 +998,8 @@ map.on('load', () => {
 
         // After fly animation completes, find the county and auto-open its popup
         map.once('moveend', () => {
+            if (requestToken !== countyPopupRequestToken) return;
+
             const countyFeature = findCountyFeatureForLngLat(coords);
             const renderedFeatures = countyFeature
                 ? [countyFeature]
@@ -980,20 +1017,17 @@ map.on('load', () => {
                 } else {
                     // DESKTOP: fixed-width popup positioned after flyTo shift
                     const popupConfig = getDesktopCountyPopupPlacement(coords);
-                    geocoderCountyPopup = new mapboxgl.Popup({
+                    geocoderCountyPopup = registerActiveCountyPopup(new mapboxgl.Popup({
                         closeButton: true,
                         maxWidth: popupConfig.maxWidth,
                         anchor: popupConfig.anchor,
                         offset: popupConfig.offset
+                    }), () => {
+                        if (findingCard) findingCard.style.display = '';
                     })
                     .setLngLat(coords)
                     .setHTML(countyPopupHTML(feature.properties))
                     .addTo(map);
-
-                    geocoderCountyPopup.on('close', () => {
-                        if (findingCard) findingCard.style.display = '';
-                        geocoderCountyPopup = null;
-                    });
                 }
             }
         });
@@ -1003,15 +1037,15 @@ map.on('load', () => {
     geocoder.on('clear', () => {
         const findingCard = document.getElementById('finding-card');
         if (findingCard) findingCard.style.display = '';
-        // Also remove geocoder county popup if open
-        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
-        // Close mobile sheet if open
-        if (typeof closeMobileCountySheet === 'function') closeMobileCountySheet();
+        resetCountyDetailUI();
     });
 
     // Close geocoder county popup when user clicks a different county
     map.on('click', 'county-fills', () => {
-        if (geocoderCountyPopup) { geocoderCountyPopup.remove(); geocoderCountyPopup = null; }
+        if (geocoderCountyPopup) {
+            geocoderCountyPopup.remove();
+            geocoderCountyPopup = null;
+        }
     });
 
     // Mount geocoder directly into the sidebar Step 2 container
@@ -1284,7 +1318,7 @@ if (sidebarToggle && sidebar) {
 
 // Build the "Displacement" tab content HTML
 function mobileDisplacementHTML(props) {
-    const countyNameTitleCase = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    const countyNameTitleCase = formatCountyName(props.COUNTY);
     const baStats = blueAcresCountyStats[countyNameTitleCase];
     const factSheetURL = countyFactSheetURL(props.COUNTY);
 
@@ -1469,7 +1503,7 @@ function openMobileCountySheet(props) {
     }
 
     // Set title
-    const countyName = props.COUNTY.charAt(0) + props.COUNTY.slice(1).toLowerCase();
+    const countyName = formatCountyName(props.COUNTY);
     title.textContent = countyName + ' County';
 
     // Reset to Displacement tab
