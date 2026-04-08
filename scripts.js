@@ -343,7 +343,7 @@ function countyPopupHTML(props) {
     // Build array of assets with risk
     const assets = [
         {
-            label: '✈️ Airports',
+            label: '✈️ Airport Facilities',
             total: props.TOTAL_AIRPORTS,
             count2025: props.AIRPORTS_2025,
             pct2025: props.PCT_AIRPORTS_2025,
@@ -351,7 +351,7 @@ function countyPopupHTML(props) {
             pct2050: props.PCT_AIRPORTS_2050
         },
         {
-            label: '🏥 Hospitals',
+            label: '🏥 Hospital Facilities',
             total: props.TOTAL_HOSPITALS,
             count2025: props.HOSPITALS_2025,
             pct2025: props.PCT_HOSPITALS_2025,
@@ -1412,8 +1412,8 @@ function mobileAssetsHTML(props) {
     const fmtComma = n => Number(n || 0).toLocaleString('en-US');
 
     const assets = [
-        { label: '✈️ Airports', total: props.TOTAL_AIRPORTS, c25: props.AIRPORTS_2025, p25: props.PCT_AIRPORTS_2025, c50: props.AIRPORTS_2050, p50: props.PCT_AIRPORTS_2050 },
-        { label: '🏥 Hospitals', total: props.TOTAL_HOSPITALS, c25: props.HOSPITALS_2025, p25: props.PCT_HOSPITALS_2025, c50: props.HOSPITAL_2050, p50: props.PCT_HOSPITALS_2050 },
+        { label: '✈️ Airport Facilities', total: props.TOTAL_AIRPORTS, c25: props.AIRPORTS_2025, p25: props.PCT_AIRPORTS_2025, c50: props.AIRPORTS_2050, p50: props.PCT_AIRPORTS_2050 },
+        { label: '🏥 Hospital Facilities', total: props.TOTAL_HOSPITALS, c25: props.HOSPITALS_2025, p25: props.PCT_HOSPITALS_2025, c50: props.HOSPITAL_2050, p50: props.PCT_HOSPITALS_2050 },
         { label: '📚 Libraries', total: props.TOTAL_LIBRARY, c25: props.LIBRARY_2025, p25: props.PCT_LIBRARY_2025, c50: props.LIBRARY_2050, p50: props.PCT_LIBRARY_2050 },
         { label: '🌳 Parks', total: props.TOTAL_PARKS, c25: props.PARKS_2025, p25: props.PCT_PARKS_2025, c50: props.PARKS_2050, p50: props.PCT_PARKS_2050 },
         { label: '⚡ Power Plants', total: props.TOTAL_POWERPLANTS, c25: props.POWERPLANTS_2025, p25: props.PCT_POWERPLANTS_2025, c50: props.POWERPLANTS_2050, p50: props.PCT_POWERPLANTS_2050 },
