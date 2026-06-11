@@ -284,7 +284,7 @@ const blueAcresCountyStats = {
 const blueAcresTotalCount = 1677;
 const blueAcresTotalAcres = 388.1;
 
-// --- County → Featured City cross-link mapping ---
+// --- County → Featured City cross-link mapping (fallback for plain county clicks) ---
 const countyToCity = {
     'ESSEX':    { name: 'Newark',        key: 'NEWARK CITY' },
     'UNION':    { name: 'Elizabeth',     key: 'ELIZABETH CITY' },
@@ -295,6 +295,130 @@ const countyToCity = {
     'MONMOUTH': { name: 'Asbury Park',   key: 'ASBURY PARK CITY' },
     'ATLANTIC': { name: 'Atlantic City', key: 'ATLANTIC CITY' }
 };
+
+// --- Resolve a Mapbox geocoder city name (e.g. "Bloomfield") to an
+//     NJ MUN key (e.g. "BLOOMFIELD TWP") used by the city tool's ?city= param.
+//     ALL_MUNICIPALITIES is loaded from data/municipalities.js. ---
+const _MUN_LOOKUP = (() => {
+    const lookup = {};
+    if (typeof ALL_MUNICIPALITIES === 'undefined' || !Array.isArray(ALL_MUNICIPALITIES)) {
+        return lookup;
+    }
+    ALL_MUNICIPALITIES.forEach((mun) => {
+        // Index the raw MUN ("BLOOMFIELD TWP") and the stripped base ("BLOOMFIELD")
+        // so "Bloomfield", "BLOOMFIELD", "Bloomfield Township" all resolve here.
+        lookup[mun] = mun;
+        const base = mun.replace(/\s+(TWP|CITY|BORO|TOWN|VILLAGE)$/, '');
+        if (base && !lookup[base]) lookup[base] = mun;
+    });
+    return lookup;
+})();
+
+function resolveMunFromName(rawName) {
+    if (!rawName) return null;
+    // Strip ", NJ" / ", New Jersey" / ", United States" tails from geocoder text.
+    const cleaned = rawName.split(',')[0].trim();
+    if (!cleaned) return null;
+    const upper = cleaned.toUpperCase();
+    if (_MUN_LOOKUP[upper]) return _MUN_LOOKUP[upper];
+    // Normalize "Township"/"Borough" to NJ-style abbreviations.
+    const normalized = upper
+        .replace(/\bTOWNSHIP\b/g, 'TWP')
+        .replace(/\bBOROUGH\b/g, 'BORO');
+    if (_MUN_LOOKUP[normalized]) return _MUN_LOOKUP[normalized];
+    for (const suffix of [' TWP', ' CITY', ' BORO', ' TOWN', ' VILLAGE']) {
+        if (_MUN_LOOKUP[normalized + suffix]) return _MUN_LOOKUP[normalized + suffix];
+    }
+    return null;
+}
+
+// Mirrors the city tool's formatMunLabel: explicit overrides where the
+// generic "strip CITY/VILLAGE" rule produces something awkward (e.g.
+// "Atlantic City" should not become "Atlantic").
+const _MUN_DISPLAY_OVERRIDES = {
+    'NEWARK CITY': 'Newark',
+    'ELIZABETH CITY': 'Elizabeth',
+    'CAMDEN CITY': 'Camden',
+    'TRENTON CITY': 'Trenton',
+    'JERSEY CITY': 'Jersey City',
+    'PATERSON CITY': 'Paterson',
+    'ASBURY PARK CITY': 'Asbury Park',
+    'ATLANTIC CITY': 'Atlantic City'
+};
+
+function formatMunDisplayName(mun) {
+    if (!mun) return '';
+    if (_MUN_DISPLAY_OVERRIDES[mun]) return _MUN_DISPLAY_OVERRIDES[mun];
+    const base = mun.replace(/\s+(CITY|VILLAGE)$/, '');
+    return base
+        .toLowerCase()
+        .split(' ')
+        .map((word) => {
+            if (word === 'twp') return 'Twp';
+            if (word === 'boro') return 'Boro';
+            if (word === 'town') return 'Town';
+            if (word.includes('-')) {
+                return word.split('-').map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('-');
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(' ');
+}
+
+// Holds the city resolved from the most recent geocoder result OR map click.
+// Cleared when the search is cleared. Replaced on every county-fill click so
+// each click's popup shows the city at the actual clicked point.
+let _geocodedCity = null;
+
+// --- Municipality boundary cache for click-to-city resolution ---
+// boundary.json is ~8MB and is fetched lazily after map init so it doesn't
+// block initial paint. The county-fill click handler tolerates the data being
+// missing (the popup falls back to the hardcoded countyToCity featured city).
+let _muniBoundaryData = null;
+let _muniBoundaryLoading = null;
+
+function loadMunicipalityBoundaries() {
+    if (_muniBoundaryData || _muniBoundaryLoading) return _muniBoundaryLoading;
+    _muniBoundaryLoading = fetch('data/boundary.json')
+        .then((r) => r.json())
+        .then((data) => {
+            _muniBoundaryData = data;
+            return data;
+        })
+        .catch((err) => {
+            console.warn('Failed to load boundary.json — click-to-city lookup disabled:', err);
+            return null;
+        });
+    return _muniBoundaryLoading;
+}
+
+function findMunicipalityForLngLat(lngLat) {
+    if (!_muniBoundaryData?.features?.length) return null;
+    const point = [lngLat.lng ?? lngLat[0], lngLat.lat ?? lngLat[1]];
+    for (const feature of _muniBoundaryData.features) {
+        const geometry = feature.geometry;
+        if (!geometry?.coordinates) continue;
+        if (geometry.type === 'Polygon' && isPointInPolygon(point, geometry.coordinates)) {
+            return feature;
+        }
+        if (geometry.type === 'MultiPolygon') {
+            for (const polygon of geometry.coordinates) {
+                if (isPointInPolygon(point, polygon)) return feature;
+            }
+        }
+    }
+    return null;
+}
+
+// Resolve a clicked lat/lng to a {name, key} city object, or null if the
+// boundary data isn't loaded yet or the click isn't inside any NJ municipality.
+function resolveCityFromLngLat(lngLat) {
+    const feature = findMunicipalityForLngLat(lngLat);
+    if (!feature) return null;
+    const mun = feature.properties?.MUN;
+    if (!mun) return null;
+    return { name: formatMunDisplayName(mun), key: mun };
+}
 
 function countyFactSheetURL(countyName) {
     if (!countyName) return 'https://rebuildbydesign.github.io/nj-flood-risk-fact-sheet/';
@@ -535,7 +659,9 @@ function countyPopupHTML(props) {
 
     let totalParcels = formatNumber(props.TOTAL_PARCELS);
 
-    const featuredCity = countyToCity[props.COUNTY];
+    // Prefer the geocoder-resolved city (any NJ municipality). Fall back to the
+    // county's hardcoded featured city when there's no active search.
+    const featuredCity = _geocodedCity || countyToCity[props.COUNTY];
     const factSheetURL = countyFactSheetURL(props.COUNTY);
     const factSheetLabel = `Download ${props.COUNTY} County Fact Sheet`;
     const cityLinkHTML = featuredCity ? `
@@ -783,6 +909,11 @@ map.on('load', () => {
     });
 
     // 3. Load county GeoJSON with popup data
+    // Kick off the municipality boundary load in the background. Used by the
+    // county-fill click handler to resolve a click to a specific MUN. Non-
+    // blocking — first click may fall back to countyToCity if not ready yet.
+    loadMunicipalityBoundaries();
+
     fetch('data/county_popup.geojson')
         .then(response => {
             if (!response.ok) {
@@ -831,6 +962,11 @@ map.on('load', () => {
                 const countySelect = document.getElementById('county-select');
                 if (countySelect) countySelect.value = feature.properties.COUNTY;
                 resetCountyDetailUI();
+
+                // Resolve the clicked point to a specific NJ municipality so the
+                // popup's "Explore X Data" button deep-links to that city. Falls
+                // back to countyToCity if boundary.json hasn't loaded yet.
+                _geocodedCity = resolveCityFromLngLat(e.lngLat);
 
                 if (window.innerWidth <= 1024) {
                     // MOBILE/TABLET: show bottom sheet instead of Mapbox popup
@@ -983,6 +1119,23 @@ map.on('load', () => {
         const requestToken = countyPopupRequestToken;
         shouldMaintainResponsiveViewport = false;
 
+        // Resolve the geocoded place to an NJ MUN key so the popup's "Explore X
+        // Data" button deep-links to the city tool's per-city view.
+        // Try result.text first (e.g. "Bloomfield"), then context for address
+        // results (e.g. "123 Main St" -> context has a place entry).
+        let resolvedMun = resolveMunFromName(e.result.text);
+        if (!resolvedMun && Array.isArray(e.result.context)) {
+            for (const ctx of e.result.context) {
+                if (ctx.id && /^(place|locality)\./.test(ctx.id)) {
+                    resolvedMun = resolveMunFromName(ctx.text);
+                    if (resolvedMun) break;
+                }
+            }
+        }
+        _geocodedCity = resolvedMun
+            ? { name: formatMunDisplayName(resolvedMun), key: resolvedMun }
+            : null;
+
         // Hide finding card while a searched location is active
         if (findingCard) findingCard.style.display = 'none';
 
@@ -1037,10 +1190,14 @@ map.on('load', () => {
     geocoder.on('clear', () => {
         const findingCard = document.getElementById('finding-card');
         if (findingCard) findingCard.style.display = '';
+        _geocodedCity = null;
         resetCountyDetailUI();
     });
 
-    // Close geocoder county popup when user clicks a different county
+    // Close geocoder county popup when user clicks a different county.
+    // The primary click handler (set up with the county-fills layer) sets
+    // _geocodedCity from the click point's municipality, so we don't clear
+    // it here — clearing would race with the primary handler.
     map.on('click', 'county-fills', () => {
         if (geocoderCountyPopup) {
             geocoderCountyPopup.remove();
@@ -1468,7 +1625,9 @@ function mobileAssetsHTML(props) {
         ? atRisk.map(assetRow).join('')
         : '<div style="font-size:0.9em;color:#888;font-style:italic;">No critical infrastructure at risk</div>';
 
-    const featuredCity = countyToCity[props.COUNTY];
+    // Prefer the geocoder-resolved city (any NJ municipality). Fall back to the
+    // county's hardcoded featured city when there's no active search.
+    const featuredCity = _geocodedCity || countyToCity[props.COUNTY];
     const cityLink = featuredCity ? `
         <a href="https://rebuildbydesign.github.io/nj-flood-risk-city/?city=${encodeURIComponent(featuredCity.key)}" target="_blank"
            style="display:block;text-align:center;font-weight:700;color:#e0e0e0;text-decoration:none;font-size:0.9em;padding:8px 12px;background:#1a1a1a;border:1px solid #888;margin-top:12px;text-transform:uppercase;letter-spacing:0.3px;">
